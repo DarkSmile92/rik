@@ -5,16 +5,15 @@ import { createStyles, makeStyles } from "@material-ui/styles";
 
 import AppBar from "./AppBar";
 import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
 import Container from "@material-ui/core/Container";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import FormControl from "@material-ui/core/FormControl";
 import Grid from "@material-ui/core/Grid";
-import Input from "@material-ui/core/Input";
 import InputAdornment from "@material-ui/core/InputAdornment";
-import InputLabel from "@material-ui/core/InputLabel";
+import MonetizationOnIcon from "@material-ui/icons/MonetizationOn";
+import { Rifm } from "rifm";
 import TextField from "@material-ui/core/TextField";
-import Typography from "@material-ui/core/Typography";
-import { formatMoney } from "./utils";
+import { injectIntl } from "react-intl";
+import { str2Float } from "./utils";
 import { withStyles } from "@material-ui/core/styles";
 
 const CssTextField = withStyles({
@@ -68,35 +67,146 @@ const useStyles = makeStyles(theme =>
     },
     menu: {
       width: 200
+    },
+    formControl: {
+      margin: theme.spacing(1)
+    },
+    returnNegative: {
+      fontWeight: "bold",
+      color: "red"
+    },
+    returnPositive: {
+      fontWeight: "bold",
+      color: "green"
+    },
+    button: {
+      margin: theme.spacing(1)
+    },
+    leftIcon: {
+      marginRight: theme.spacing(1)
     }
   })
 );
 
-const App = () => {
+const App = props => {
+  const INTL = props.intl;
   const classes = useStyles();
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState("");
   const [provision, setProvision] = useState(0.0);
   const [buyingcosts, setBuyingcosts] = useState(12.0);
   const [interest, setInterest] = useState(1.8); // Zins
   const [repayment, setRepayment] = useState(2); // Tilgung
-  const [condoFee, setCondoFee] = useState(0); // Hausgeld
-  const [rentIndex, setRentIndex] = useState(0); // Mietspiegel
-  const [rent, setRent] = useState(0); // Mieteinnahmen
+  const [condoFee, setCondoFee] = useState("0.00"); // Hausgeld
+  const [rentIndex, setRentIndex] = useState("0.00"); // Mietspiegel
+  const [rent, setRent] = useState("0.00"); // Mieteinnahmen
   const [livingSpace, setLivingSpace] = useState(0); // Wohnflaeche
-  const [totalAmount, setTotalAmount] = useState(0); // Gesamtsumme
-  const [pricePerSpace, setPricePerSpace] = useState(0); // Preis pro QM
-  const [interestPerMonth, setInterestPerMonth] = useState(0); // Zinsen / Monat
-  const [repaymentPerMonth, setRepaymentPerMonth] = useState(0); // Tilgung / Monat
+  const [totalAmount, setTotalAmount] = useState(""); // Gesamtsumme
+  const [pricePerSpace, setPricePerSpace] = useState("0.00"); // Preis pro QM
+  const [interestPerMonth, setInterestPerMonth] = useState(""); // Zinsen / Monat
+  const [repaymentPerMonth, setRepaymentPerMonth] = useState(""); // Tilgung / Monat
   const [monthlyCosts, setMonthlyCosts] = useState(0); // Monatliche Kosten
+  const [monthlyCostsNoBuyingCosts, setMonthlyCostsNoBuyingCosts] = useState(0); // Monatliche Kosten ohne NK
+  const [monthlyCostsInvest, setMonthlyCostsInvest] = useState(0); // Monatliche Kosten Anlage
 
-  const recalculate = (_price, _provision, _buyingcosts, _livingSpace) => {
+  const recalculate = (
+    _price,
+    _provision,
+    _buyingcosts,
+    _livingSpace,
+    _interest,
+    _repayment,
+    _condoFee,
+    _rent,
+    _rentIndex
+  ) => {
     if (isNaN(_price) || !_price || _price === 0) return;
-    const amt_provision = _price * (_provision / 100);
-    const amt_buyingCosts = _price * (_buyingcosts / 100);
-    setTotalAmount((_price + amt_provision + amt_buyingCosts).toFixed(2));
-    setPricePerSpace(
-      formatMoney((_price + amt_provision) / _livingSpace, 2, 3, ".", ",")
+    const amt_provision = _price * ((isNaN(_provision) ? 0 : _provision) / 100);
+    const amt_buyingCosts =
+      _price * ((isNaN(_buyingcosts) ? 0 : _buyingcosts) / 100);
+    const amt_total = _price + amt_provision + amt_buyingCosts;
+    const amt_interest_yearly = (amt_total * _interest) / 100;
+    const amt_repayment_yearly = (amt_total * _repayment) / 100;
+    const amt_costs_monthly =
+      amt_interest_yearly / 12 +
+      amt_repayment_yearly / 12 +
+      (isNaN(_condoFee) ? 0 : _condoFee);
+    let amt_costs_monthly_invest = 0;
+    // rent is higher ranked than rentIndex
+    if (
+      (isNaN(_rent) || _rent === 0) &&
+      !isNaN(_rentIndex) &&
+      _rentIndex > 0 &&
+      !isNaN(_livingSpace) &&
+      _livingSpace > 0
+    ) {
+      amt_costs_monthly_invest = amt_costs_monthly - _rentIndex * _livingSpace;
+    } else {
+      amt_costs_monthly_invest = amt_costs_monthly - (isNaN(_rent) ? 0 : _rent);
+    }
+
+    setTotalAmount(amt_total.toString());
+    if (_livingSpace && !isNaN(_livingSpace)) {
+      setPricePerSpace(
+        ((_price + amt_provision) / _livingSpace).toFixed(2).toString()
+      );
+    }
+    setInterestPerMonth((amt_interest_yearly / 12).toFixed(2).toString());
+    setRepaymentPerMonth((amt_repayment_yearly / 12).toFixed(2).toString());
+    setMonthlyCosts(amt_costs_monthly.toFixed(2).toString());
+    // preis + provision
+    // _price + amt_provision
+    // zins = ((_price+amt_provision)*_interest) / 100
+    // tilgung = ((preis+provision)*_repayment) / 100
+    setMonthlyCostsNoBuyingCosts(
+      ((_price + amt_provision) * _interest) / 100 / 12 +
+        ((_price + amt_provision) * _repayment) / 100 / 12 +
+        (isNaN(_condoFee) ? 0 : _condoFee)
     );
+    setMonthlyCostsInvest(amt_costs_monthly_invest.toFixed(2).toString());
+  };
+
+  const numberFormat = theString => {
+    const r = parseInt(theString.replace(/[^\d]+/gi, ""), 10);
+    return r ? r.toLocaleString("de-DE") : "";
+  };
+
+  const getBuyingCostsFormatted = () => {
+    if (price && price !== "" && buyingcosts) {
+      const parsedPrice = parseFloat(price.replace(/[^\d]+/, ""));
+      const costs = parsedPrice * (buyingcosts / 100);
+      return `${costs.toFixed(2).toLocaleString("de")} €`;
+    }
+    return "0,00€";
+  };
+
+  const formatCurrency = value =>
+    INTL.formatNumber(value, {
+      style: "currency",
+      currency: "EUR"
+    });
+
+  const proposeRent = () => {
+    if (monthlyCosts && !isNaN(monthlyCosts)) {
+      const v_monthly = parseFloat(monthlyCosts);
+      const wantedRent = v_monthly + v_monthly * 0.04;
+      setRent(Math.round(wantedRent).toString());
+      setRentIndex(
+        livingSpace
+          ? Math.round(Math.round(wantedRent) / livingSpace).toString()
+          : "0"
+      );
+      recalculate(
+        str2Float(price),
+        provision,
+        buyingcosts,
+        livingSpace,
+        interest,
+        repayment,
+        str2Float(condoFee),
+        wantedRent,
+        livingSpace ? wantedRent / livingSpace : 0
+      );
+    }
   };
 
   return (
@@ -108,30 +218,44 @@ const App = () => {
             <Grid container className={classes.root} spacing={2}>
               <Grid container item className={classes.root} spacing={2} xs={12}>
                 <Grid item xs>
-                  <TextField
-                    id="buyprice"
-                    label="Kaufpreis"
-                    className={classes.textField}
+                  <Rifm
                     value={price}
-                    onChange={e => {
-                      if (!isNaN(e.target.value)) {
-                        setPrice(parseFloat(e.target.value));
-                        recalculate(
-                          parseFloat(e.target.value),
-                          provision,
-                          buyingcosts,
-                          livingSpace
-                        );
-                      }
+                    onChange={newVal => {
+                      setPrice(newVal);
+                      recalculate(
+                        str2Float(newVal),
+                        provision,
+                        buyingcosts,
+                        livingSpace,
+                        interest,
+                        repayment,
+                        str2Float(condoFee),
+                        str2Float(rent),
+                        str2Float(rentIndex)
+                      );
                     }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">&euro;</InputAdornment>
-                      )
-                    }}
-                  />
+                    format={numberFormat}
+                    replace={v => v.replace(",", ".")}
+                  >
+                    {({ value, onChange }) => (
+                      <TextField
+                        id="buyprice"
+                        label="Kaufpreis"
+                        className={classes.textField}
+                        value={value}
+                        onChange={onChange}
+                        margin="normal"
+                        type="tel"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              &euro;
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    )}
+                  </Rifm>
                 </Grid>
                 <Grid item xs>
                   <TextField
@@ -142,10 +266,15 @@ const App = () => {
                     onChange={e => {
                       setProvision(parseFloat(e.target.value));
                       recalculate(
-                        price,
+                        str2Float(price),
                         parseFloat(e.target.value),
                         buyingcosts,
-                        livingSpace
+                        livingSpace,
+                        interest,
+                        repayment,
+                        str2Float(condoFee),
+                        str2Float(rent),
+                        str2Float(rentIndex)
                       );
                     }}
                     margin="normal"
@@ -166,10 +295,15 @@ const App = () => {
                     onChange={e => {
                       setBuyingcosts(parseFloat(e.target.value));
                       recalculate(
-                        price,
+                        str2Float(price),
                         provision,
                         parseFloat(e.target.value),
-                        livingSpace
+                        livingSpace,
+                        interest,
+                        repayment,
+                        str2Float(condoFee),
+                        str2Float(rent),
+                        str2Float(rentIndex)
                       );
                     }}
                     margin="normal"
@@ -179,6 +313,7 @@ const App = () => {
                         <InputAdornment position="end">%</InputAdornment>
                       )
                     }}
+                    helperText={getBuyingCostsFormatted()}
                   />
                 </Grid>
                 <Grid item xs>
@@ -188,8 +323,21 @@ const App = () => {
                     className={classes.textField}
                     value={interest}
                     onChange={e => {
-                      setInterest(parseFloat(e.target.value));
-                      recalculate(price, provision, buyingcosts, livingSpace);
+                      const parsedInterest = parseFloat(
+                        e.target.value.replace(",", ".")
+                      );
+                      setInterest(parsedInterest);
+                      recalculate(
+                        str2Float(price),
+                        provision,
+                        buyingcosts,
+                        livingSpace,
+                        parsedInterest,
+                        repayment,
+                        str2Float(condoFee),
+                        str2Float(rent),
+                        str2Float(rentIndex)
+                      );
                     }}
                     margin="normal"
                     type="number"
@@ -208,7 +356,17 @@ const App = () => {
                     value={repayment}
                     onChange={e => {
                       setRepayment(parseFloat(e.target.value));
-                      recalculate(price, provision, buyingcosts, livingSpace);
+                      recalculate(
+                        str2Float(price),
+                        provision,
+                        buyingcosts,
+                        livingSpace,
+                        interest,
+                        parseFloat(e.target.value),
+                        str2Float(condoFee),
+                        str2Float(rent),
+                        str2Float(rentIndex)
+                      );
                     }}
                     margin="normal"
                     type="number"
@@ -222,61 +380,147 @@ const App = () => {
               </Grid>
               <Grid container item className={classes.root} spacing={2} xs={12}>
                 <Grid item xs>
-                  <TextField
-                    id="condo-fee"
-                    label="Hausgeld"
-                    className={classes.textField}
+                  <Rifm
                     value={condoFee}
-                    onChange={e => {
-                      setCondoFee(parseFloat(e.target.value));
-                      recalculate(price, provision, buyingcosts, livingSpace);
+                    onChange={newVal => {
+                      setCondoFee(newVal);
+                      recalculate(
+                        str2Float(price),
+                        provision,
+                        buyingcosts,
+                        livingSpace,
+                        interest,
+                        repayment,
+                        str2Float(newVal),
+                        str2Float(rent),
+                        str2Float(rentIndex)
+                      );
                     }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">&euro;</InputAdornment>
-                      )
-                    }}
-                  />
+                    format={numberFormat}
+                    replace={v => v.replace(",", ".")}
+                  >
+                    {({ value, onChange }) => (
+                      <TextField
+                        id="condo-fee"
+                        label="Hausgeld"
+                        className={classes.textField}
+                        value={value}
+                        onChange={onChange}
+                        margin="normal"
+                        type="tel"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              &euro;
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    )}
+                  </Rifm>
                 </Grid>
                 <Grid item xs>
-                  <TextField
-                    id="rent-index"
-                    label="Mietspiegel €/m²"
-                    className={classes.textField}
+                  <Rifm
                     value={rentIndex}
-                    onChange={e => {
-                      setRentIndex(parseFloat(e.target.value));
-                      recalculate(price, provision, buyingcosts, livingSpace);
+                    onChange={newVal => {
+                      setRentIndex(newVal);
+                      if (livingSpace) {
+                        const newRent = Math.round(
+                          str2Float(newVal) * livingSpace
+                        );
+                        setRent(newRent.toString());
+                        recalculate(
+                          str2Float(price),
+                          provision,
+                          buyingcosts,
+                          livingSpace,
+                          interest,
+                          repayment,
+                          str2Float(condoFee),
+                          newRent,
+                          str2Float(newVal)
+                        );
+                      } else {
+                        recalculate(
+                          str2Float(price),
+                          provision,
+                          buyingcosts,
+                          livingSpace,
+                          interest,
+                          repayment,
+                          str2Float(condoFee),
+                          str2Float(rent),
+                          str2Float(newVal)
+                        );
+                      }
                     }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">&euro;</InputAdornment>
-                      )
-                    }}
-                  />
+                    format={numberFormat}
+                    replace={v => v.replace(",", ".")}
+                  >
+                    {({ value, onChange }) => (
+                      <TextField
+                        id="rent-index"
+                        label="Mietspiegel €/m²"
+                        className={classes.textField}
+                        value={value}
+                        onChange={onChange}
+                        margin="normal"
+                        type="tel"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              &euro;
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    )}
+                  </Rifm>
                 </Grid>
                 <Grid item xs>
-                  <TextField
-                    id="rent"
-                    label="Mieteinnahmen / Monat"
-                    className={classes.textField}
+                  <Rifm
                     value={rent}
-                    onChange={e => {
-                      setRent(parseFloat(e.target.value));
-                      recalculate(price, provision, buyingcosts, livingSpace);
+                    onChange={newVal => {
+                      setRent(newVal);
+                      if (livingSpace) {
+                        setRentIndex(
+                          Math.round(str2Float(newVal) / livingSpace).toString()
+                        );
+                      }
+                      recalculate(
+                        str2Float(price),
+                        provision,
+                        buyingcosts,
+                        livingSpace,
+                        interest,
+                        repayment,
+                        str2Float(condoFee),
+                        str2Float(newVal),
+                        str2Float(rentIndex)
+                      );
                     }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">&euro;</InputAdornment>
-                      )
-                    }}
-                  />
+                    format={numberFormat}
+                    replace={v => v.replace(",", ".")}
+                  >
+                    {({ value, onChange }) => (
+                      <TextField
+                        id="rent"
+                        label="Mieteinnahmen / Monat"
+                        className={classes.textField}
+                        value={value}
+                        onChange={onChange}
+                        margin="normal"
+                        type="tel"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              &euro;
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    )}
+                  </Rifm>
                 </Grid>
                 <Grid item xs>
                   <TextField
@@ -287,10 +531,15 @@ const App = () => {
                     onChange={e => {
                       setLivingSpace(parseFloat(e.target.value));
                       recalculate(
-                        price,
+                        str2Float(price),
                         provision,
                         buyingcosts,
-                        parseFloat(e.target.value)
+                        parseFloat(e.target.value),
+                        interest,
+                        repayment,
+                        str2Float(condoFee),
+                        str2Float(rent),
+                        str2Float(rentIndex)
                       );
                     }}
                     margin="normal"
@@ -303,18 +552,43 @@ const App = () => {
                   />
                 </Grid>
                 <Grid item xs>
+                  {/*<Rifm
+                    value={totalAmount}
+                    format={numberFormat}
+                    replace={v => v.replace(",", ".")}
+                  >
+                    {({ value, onChange }) => (
+                      <CssTextField
+                        id="total-amount"
+                        label="Gesamtsumme"
+                        className={classes.textField}
+                        value={value}
+                        margin="normal"
+                        // type="number"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              &euro;
+                            </InputAdornment>
+                          )
+                        }}
+                        disabled
+                        variant="outlined"
+                      />
+                    )}
+                      </Rifm>*/}
                   <CssTextField
                     id="total-amount"
                     label="Gesamtsumme"
                     className={classes.textField}
-                    value={totalAmount}
+                    value={formatCurrency(totalAmount)}
                     margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">&euro;</InputAdornment>
-                      )
-                    }}
+                    // type="number"
+                    // InputProps={{
+                    //   endAdornment: (
+                    //     <InputAdornment position="end">&euro;</InputAdornment>
+                    //   )
+                    // }}
                     disabled
                     variant="outlined"
                   />
@@ -332,14 +606,14 @@ const App = () => {
                   id="pricePerSpace"
                   label="€ / m²"
                   className={classes.textField}
-                  value={pricePerSpace}
+                  value={formatCurrency(pricePerSpace)}
                   margin="normal"
-                  type="number"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">&euro;</InputAdornment>
-                    )
-                  }}
+                  // type="number"
+                  // InputProps={{
+                  //   endAdornment: (
+                  //     <InputAdornment position="end">&euro;</InputAdornment>
+                  //   )
+                  // }}
                   disabled
                 />
               </Grid>
@@ -348,14 +622,14 @@ const App = () => {
                   id="interestPerMonth"
                   label="Zinsen / Monat"
                   className={classes.textField}
-                  value={interestPerMonth}
+                  value={formatCurrency(interestPerMonth)}
                   margin="normal"
-                  type="number"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">&euro;</InputAdornment>
-                    )
-                  }}
+                  // type="number"
+                  // InputProps={{
+                  //   endAdornment: (
+                  //     <InputAdornment position="end">&euro;</InputAdornment>
+                  //   )
+                  // }}
                   disabled
                 />
               </Grid>
@@ -364,36 +638,79 @@ const App = () => {
                   id="repaymentPerMonth"
                   label="Tilgung / Monat"
                   className={classes.textField}
-                  value={repaymentPerMonth}
+                  value={formatCurrency(repaymentPerMonth)}
                   margin="normal"
-                  type="number"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">&euro;</InputAdornment>
-                    )
-                  }}
+                  // type="number"
+                  // InputProps={{
+                  //   endAdornment: (
+                  //     <InputAdornment position="end">&euro;</InputAdornment>
+                  //   )
+                  // }}
                   disabled
                 />
               </Grid>
               <Grid item xs>
                 <CssTextField
                   id="monthly-costs"
-                  label="Gesamtkosten / Monat"
+                  label="Kosten / Monat"
                   className={classes.textField}
-                  value={monthlyCosts}
+                  value={formatCurrency(monthlyCosts)}
                   margin="normal"
-                  type="number"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">&euro;</InputAdornment>
-                    )
-                  }}
+                  // type="number"
+                  // InputProps={{
+                  //   endAdornment: (
+                  //     <InputAdornment position="end">&euro;</InputAdornment>
+                  //   )
+                  // }}
                   disabled
                   variant="outlined"
+                  helperText={`Ohne NK: ${formatCurrency(
+                    monthlyCostsNoBuyingCosts
+                  )}`}
                 />
               </Grid>
-              <Grid item xs />
+              <Grid item xs>
+                <CssTextField
+                  id="monthly-costs"
+                  label="Kosten / Monat (Anlage)"
+                  className={classes.textField}
+                  value={formatCurrency(monthlyCostsInvest)}
+                  margin="normal"
+                  // type="number"
+                  // InputProps={{
+                  //   endAdornment: (
+                  //     <InputAdornment position="end">&euro;</InputAdornment>
+                  //   )
+                  // }}
+                  disabled
+                  variant="outlined"
+                  helperText={
+                    parseFloat(monthlyCostsInvest) > 0 ? (
+                      <span className={classes.returnNegative}>Verlust</span>
+                    ) : parseFloat(monthlyCostsInvest) < 0 ? (
+                      <span className={classes.returnPositive}>Gewinn</span>
+                    ) : (
+                      <span />
+                    )
+                  }
+                />
+              </Grid>
             </Grid>
+          </Grid>
+        </Container>
+        <Container maxWidth="lg">
+          <Grid container className={classes.root} spacing={2}>
+            <Grid item xs={12} />
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              className={classes.button}
+              onClick={() => proposeRent()}
+            >
+              <MonetizationOnIcon className={classes.leftIcon} />
+              Miete vorschlagen
+            </Button>
           </Grid>
         </Container>
       </div>
@@ -401,4 +718,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default injectIntl(App);

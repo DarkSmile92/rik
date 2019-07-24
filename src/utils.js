@@ -15,3 +15,11 @@ export const formatMoney = (a, n, x, s, c) => {
     "$&" + (s || ",")
   );
 };
+
+export const str2Float = stringValue =>
+  parseFloat(stringValue.replace(/[^\d]+/, ""));
+
+export const formatNumber = n => {
+  // format number 1000000 to 1,234,567
+  return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
