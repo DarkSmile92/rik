@@ -174,7 +174,7 @@ const App = props => {
     if (price && price !== "" && buyingcosts) {
       const parsedPrice = parseFloat(price.replace(/[^\d]+/, ""));
       const costs = parsedPrice * (buyingcosts / 100);
-      return `${costs.toFixed(2).toLocaleString("de")} €`;
+      return formatCurrency(costs);
     }
     return "0,00€";
   };
