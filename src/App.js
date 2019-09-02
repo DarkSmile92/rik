@@ -93,7 +93,7 @@ const App = props => {
   const classes = useStyles();
   const [price, setPrice] = useState("");
   const [provision, setProvision] = useState(0.0);
-  const [buyingcosts, setBuyingcosts] = useState(12.0);
+  const [buyingcosts, setBuyingcosts] = useState(6.5);
   const [interest, setInterest] = useState(1.8); // Zins
   const [repayment, setRepayment] = useState(2); // Tilgung
   const [condoFee, setCondoFee] = useState("0.00"); // Hausgeld
@@ -711,6 +711,16 @@ const App = props => {
               <MonetizationOnIcon className={classes.leftIcon} />
               Miete vorschlagen
             </Button>
+			<a href="https://www.sparkasse.de/service/rechner/nebenkostenrechner.html">
+			<Button
+			  variant="contained"
+			  color="primary"
+			  size="small"
+			  className={classes.button}
+			>
+			SPK NK Rechner
+			</Button>
+			</a>
           </Grid>
         </Container>
       </div>
