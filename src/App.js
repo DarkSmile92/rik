@@ -94,7 +94,7 @@ const useStyles = makeStyles(theme =>
     },
     bmcButton: {
       padding: "7px 10px 7px 10px",
-      lineHeight: 35,
+      // lineHeight: 35,
       height: 51,
       minWidth: 217,
       textDecoration: "none",
@@ -109,7 +109,7 @@ const useStyles = makeStyles(theme =>
       boxShadow: "0px 1px 2px rgba(190, 190, 190, 0.5)",
       "-webkit-box-shadow": "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
       margin: "0 auto",
-      fontFamily: '"Arial", cursive',
+      //fontFamily: "'Lato', cursive",
       "-webkit-box-sizing": "border-box",
       boxSizing: "border-box",
       "-o-transition": "0.3s all linear",
@@ -722,7 +722,7 @@ const App = props => {
               </Grid>
               <Grid item xs>
                 <CssTextField
-                  id="monthly-costs"
+                  id="monthly-costs-invest"
                   label="Kosten / Monat (Anlage)"
                   className={classes.textField}
                   value={formatCurrency(monthlyCostsInvest)}
@@ -772,21 +772,23 @@ const App = props => {
                 SPK NK Rechner
               </Button>
             </a>
+            <Grid item xs={12}>
+              <a
+                className={classes.bmcButton}
+                target="_blank"
+                href="https://www.buymeacoffee.com/Robs"
+              >
+                <img
+                  className={classes.bmcButtonImg}
+                  src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
+                  alt="Kauf mir einen Kaffee"
+                />
+                <span style={{ marginLeft: 15, fontSize: 19 }}>
+                  Kauf mir einen Kaffee
+                </span>
+              </a>
+            </Grid>
           </Grid>
-          <a
-            className={classes.bmcButton}
-            target="_blank"
-            href="https://www.buymeacoffee.com/Robs"
-          >
-            <img
-              className={classes.bmcButtonImg}
-              src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
-              alt="Kauf mir einen Kaffee"
-            />
-            <span style={{ marginLeft: 15, fontSize: 19 }}>
-              Kauf mir einen Kaffee
-            </span>
-          </a>
         </Container>
       </div>
     </React.Fragment>
