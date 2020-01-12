@@ -84,6 +84,57 @@ const useStyles = makeStyles(theme =>
     },
     leftIcon: {
       marginRight: theme.spacing(1)
+    },
+    bmcButtonImg: {
+      width: 35,
+      marginBottom: 1,
+      boxShadow: "none",
+      border: "none",
+      verticalAlign: "middle"
+    },
+    bmcButton: {
+      padding: "7px 10px 7px 10px",
+      lineHeight: 35,
+      height: 51,
+      minWidth: 217,
+      textDecoration: "none",
+      display: "inline-flex",
+      color: "#ffffff",
+      backgroundColor: "#79D6B5",
+      borderRadius: 5,
+      border: "1px solid transparent",
+      padding: "7px 10px 7px 10px",
+      fontSize: 20,
+      letterSpacing: 0.6,
+      boxShadow: "0px 1px 2px rgba(190, 190, 190, 0.5)",
+      "-webkit-box-shadow": "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
+      margin: "0 auto",
+      fontFamily: '"Arial", cursive',
+      "-webkit-box-sizing": "border-box",
+      boxSizing: "border-box",
+      "-o-transition": "0.3s all linear",
+      "-webkit-transition": "0.3s all linear",
+      "-moz-transition": "0.3s all linear",
+      "-ms-transition": "0.3s all linear",
+      transition: "0.3s all linear",
+      "&:hover": {
+        textDecoration: "none",
+        boxShadow: "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
+        opacity: 0.85,
+        color: "#ffffff"
+      },
+      "&:focus": {
+        textDecoration: "none",
+        boxShadow: "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
+        opacity: 0.85,
+        color: "#ffffff"
+      },
+      "&:active": {
+        textDecoration: "none",
+        boxShadow: "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
+        opacity: 0.85,
+        color: "#ffffff"
+      }
     }
   })
 );
@@ -711,17 +762,31 @@ const App = props => {
               <MonetizationOnIcon className={classes.leftIcon} />
               Miete vorschlagen
             </Button>
-			<a href="https://www.sparkasse.de/service/rechner/nebenkostenrechner.html">
-			<Button
-			  variant="contained"
-			  color="primary"
-			  size="small"
-			  className={classes.button}
-			>
-			SPK NK Rechner
-			</Button>
-			</a>
+            <a href="https://www.sparkasse.de/service/rechner/nebenkostenrechner.html">
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                className={classes.button}
+              >
+                SPK NK Rechner
+              </Button>
+            </a>
           </Grid>
+          <a
+            className={classes.bmcButton}
+            target="_blank"
+            href="https://www.buymeacoffee.com/Robs"
+          >
+            <img
+              className={classes.bmcButtonImg}
+              src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
+              alt="Kauf mir einen Kaffee"
+            />
+            <span style={{ marginLeft: 15, fontSize: 19 }}>
+              Kauf mir einen Kaffee
+            </span>
+          </a>
         </Container>
       </div>
     </React.Fragment>
