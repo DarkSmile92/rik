@@ -13,7 +13,7 @@ import MonetizationOnIcon from "@material-ui/icons/MonetizationOn";
 import { Rifm } from "rifm";
 import TextField from "@material-ui/core/TextField";
 import { injectIntl } from "react-intl";
-import { str2Float } from "./utils";
+// import { str2Float } from "./utils";
 import { withStyles } from "@material-ui/core/styles";
 
 const CssTextField = withStyles({
@@ -217,7 +217,7 @@ const App = props => {
   };
 
   const numberFormat = theString => {
-    const r = parseInt(theString.replace(/[^\d]+/gi, ""), 10);
+    const r = parseFloat(theString.replace(/[^\d]+/gi, ""), 10);
     return r ? r.toLocaleString("de-DE") : "";
   };
 
@@ -240,6 +240,7 @@ const App = props => {
     if (monthlyCosts && !isNaN(monthlyCosts)) {
       const v_monthly = parseFloat(monthlyCosts);
       const wantedRent = v_monthly + v_monthly * 0.04;
+      console.log(Math.round(wantedRent));
       setRent(Math.round(wantedRent).toString());
       setRentIndex(
         livingSpace
@@ -247,13 +248,13 @@ const App = props => {
           : "0"
       );
       recalculate(
-        str2Float(price),
+        parseFloat(price.replace(/\./g, "")),
         provision,
         buyingcosts,
         livingSpace,
         interest,
         repayment,
-        str2Float(condoFee),
+        parseFloat(condoFee),
         wantedRent,
         livingSpace ? wantedRent / livingSpace : 0
       );
@@ -274,15 +275,15 @@ const App = props => {
                     onChange={newVal => {
                       setPrice(newVal);
                       recalculate(
-                        str2Float(newVal),
+                        parseFloat(newVal.replace(/\./g, "")),
                         provision,
                         buyingcosts,
                         livingSpace,
                         interest,
                         repayment,
-                        str2Float(condoFee),
-                        str2Float(rent),
-                        str2Float(rentIndex)
+                        parseFloat(condoFee),
+                        parseFloat(rent),
+                        parseFloat(rentIndex)
                       );
                     }}
                     format={numberFormat}
@@ -317,15 +318,15 @@ const App = props => {
                     onChange={e => {
                       setProvision(parseFloat(e.target.value));
                       recalculate(
-                        str2Float(price),
+                        parseFloat(price.replace(/\./g, "")),
                         parseFloat(e.target.value),
                         buyingcosts,
                         livingSpace,
                         interest,
                         repayment,
-                        str2Float(condoFee),
-                        str2Float(rent),
-                        str2Float(rentIndex)
+                        parseFloat(condoFee),
+                        parseFloat(rent),
+                        parseFloat(rentIndex)
                       );
                     }}
                     margin="normal"
@@ -346,15 +347,15 @@ const App = props => {
                     onChange={e => {
                       setBuyingcosts(parseFloat(e.target.value));
                       recalculate(
-                        str2Float(price),
+                        parseFloat(price.replace(/\./g, "")),
                         provision,
                         parseFloat(e.target.value),
                         livingSpace,
                         interest,
                         repayment,
-                        str2Float(condoFee),
-                        str2Float(rent),
-                        str2Float(rentIndex)
+                        parseFloat(condoFee),
+                        parseFloat(rent),
+                        parseFloat(rentIndex)
                       );
                     }}
                     margin="normal"
@@ -379,15 +380,15 @@ const App = props => {
                       );
                       setInterest(parsedInterest);
                       recalculate(
-                        str2Float(price),
+                        parseFloat(price.replace(/\./g, "")),
                         provision,
                         buyingcosts,
                         livingSpace,
                         parsedInterest,
                         repayment,
-                        str2Float(condoFee),
-                        str2Float(rent),
-                        str2Float(rentIndex)
+                        parseFloat(condoFee),
+                        parseFloat(rent),
+                        parseFloat(rentIndex)
                       );
                     }}
                     margin="normal"
@@ -408,15 +409,15 @@ const App = props => {
                     onChange={e => {
                       setRepayment(parseFloat(e.target.value));
                       recalculate(
-                        str2Float(price),
+                        parseFloat(price.replace(/\./g, "")),
                         provision,
                         buyingcosts,
                         livingSpace,
                         interest,
                         parseFloat(e.target.value),
-                        str2Float(condoFee),
-                        str2Float(rent),
-                        str2Float(rentIndex)
+                        parseFloat(condoFee),
+                        parseFloat(rent),
+                        parseFloat(rentIndex)
                       );
                     }}
                     margin="normal"
@@ -436,15 +437,15 @@ const App = props => {
                     onChange={newVal => {
                       setCondoFee(newVal);
                       recalculate(
-                        str2Float(price),
+                        parseFloat(price.replace(/\./g, "")),
                         provision,
                         buyingcosts,
                         livingSpace,
                         interest,
                         repayment,
-                        str2Float(newVal),
-                        str2Float(rent),
-                        str2Float(rentIndex)
+                        parseFloat(newVal),
+                        parseFloat(rent),
+                        parseFloat(rentIndex)
                       );
                     }}
                     format={numberFormat}
@@ -477,31 +478,31 @@ const App = props => {
                       setRentIndex(newVal);
                       if (livingSpace) {
                         const newRent = Math.round(
-                          str2Float(newVal) * livingSpace
+                          parseFloat(newVal) * livingSpace
                         );
                         setRent(newRent.toString());
                         recalculate(
-                          str2Float(price),
+                          parseFloat(price.replace(/\./g, "")),
                           provision,
                           buyingcosts,
                           livingSpace,
                           interest,
                           repayment,
-                          str2Float(condoFee),
+                          parseFloat(condoFee),
                           newRent,
-                          str2Float(newVal)
+                          parseFloat(newVal)
                         );
                       } else {
                         recalculate(
-                          str2Float(price),
+                          parseFloat(price.replace(/\./g, "")),
                           provision,
                           buyingcosts,
                           livingSpace,
                           interest,
                           repayment,
-                          str2Float(condoFee),
-                          str2Float(rent),
-                          str2Float(newVal)
+                          parseFloat(condoFee),
+                          parseFloat(rent),
+                          parseFloat(newVal)
                         );
                       }
                     }}
@@ -535,19 +536,21 @@ const App = props => {
                       setRent(newVal);
                       if (livingSpace) {
                         setRentIndex(
-                          Math.round(str2Float(newVal) / livingSpace).toString()
+                          Math.round(
+                            parseFloat(newVal) / livingSpace
+                          ).toString()
                         );
                       }
                       recalculate(
-                        str2Float(price),
+                        parseFloat(price.replace(/\./g, "")),
                         provision,
                         buyingcosts,
                         livingSpace,
                         interest,
                         repayment,
-                        str2Float(condoFee),
-                        str2Float(newVal),
-                        str2Float(rentIndex)
+                        parseFloat(condoFee),
+                        parseFloat(newVal),
+                        parseFloat(rentIndex)
                       );
                     }}
                     format={numberFormat}
@@ -582,15 +585,15 @@ const App = props => {
                     onChange={e => {
                       setLivingSpace(parseFloat(e.target.value));
                       recalculate(
-                        str2Float(price),
+                        parseFloat(price.replace(/\./g, "")),
                         provision,
                         buyingcosts,
                         parseFloat(e.target.value),
                         interest,
                         repayment,
-                        str2Float(condoFee),
-                        str2Float(rent),
-                        str2Float(rentIndex)
+                        parseFloat(condoFee),
+                        parseFloat(rent),
+                        parseFloat(rentIndex)
                       );
                     }}
                     margin="normal"
