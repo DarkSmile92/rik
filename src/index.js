@@ -1,3 +1,7 @@
+import "primereact/resources/themes/saga-blue/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import "primeflex/primeflex.css";
 import "./index.css";
 
 import * as de from "react-intl/locale-data/de";
@@ -8,29 +12,12 @@ import { IntlProvider, addLocaleData } from "react-intl";
 import App from "./App";
 import React from "react";
 import ReactDOM from "react-dom";
-import { ThemeProvider } from "@material-ui/styles";
-import { createMuiTheme } from "@material-ui/core";
-
-// const theme = {
-//   background: "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)"
-// };
 
 addLocaleData([...de]);
 
-const theme = createMuiTheme({
-  spacing: 4,
-  palette: {
-    primary: {
-      main: "#007bff"
-    }
-  }
-});
-
 ReactDOM.render(
   <IntlProvider locale="de">
-    <ThemeProvider theme={theme}>
-      <App />
-    </ThemeProvider>
+    <App />
   </IntlProvider>,
   document.getElementById("root")
 );

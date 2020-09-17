@@ -23,6 +23,70 @@
   color: #61dafb;
 }
 
+.text-red {
+  color: red;
+}
+
+.text-green {
+  color: green;
+}
+
+.bmcButtonImg {
+  width: 35px;
+  border: none;
+  box-shadow: none;
+  margin-bottom: 1px;
+  vertical-align: middle;
+}
+.bmcButton {
+  color: #ffffff;
+  border: 1px solid transparent;
+  height: 51px;
+  margin: 0 auto;
+  display: inline-flex;
+  padding: 7px 10px 7px 10px;
+  font-size: 20px;
+  min-width: 217px;
+  box-shadow: 0px 1px 2px rgba(190, 190, 190, 0.5);
+  box-sizing: border-box;
+  transition: 0.3s all linear;
+  -o-transition: 0.3s all linear;
+  border-radius: 5px;
+  -ms-transition: 0.3s all linear;
+  letter-spacing: 0.6px;
+  -moz-transition: 0.3s all linear;
+  text-decoration: none;
+  background-color: #79d6b5;
+  -webkit-box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5);
+  -webkit-box-sizing: border-box;
+  -webkit-transition: 0.3s all linear;
+}
+.bmcButton:hover {
+  color: #ffffff;
+  opacity: 0.85;
+  box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5);
+  text-decoration: none;
+}
+.bmcButton:focus {
+  color: #ffffff;
+  opacity: 0.85;
+  box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5);
+  text-decoration: none;
+}
+.bmcButton:active {
+  color: #ffffff;
+  opacity: 0.85;
+  box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5);
+  text-decoration: none;
+}
+
+.p-panel-header {
+  background: #007bff !important;
+  color: #fff !important;
+  font-size: 1.5em;
+  justify-content: center;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

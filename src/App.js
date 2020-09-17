@@ -1,160 +1,27 @@
 import "./App.css";
-
 import React, { useState } from "react";
-import { createStyles, makeStyles } from "@material-ui/styles";
-
 import AppBar from "./AppBar";
-import Box from "@material-ui/core/Box";
-import Button from "@material-ui/core/Button";
-import Container from "@material-ui/core/Container";
-import Grid from "@material-ui/core/Grid";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import MonetizationOnIcon from "@material-ui/icons/MonetizationOn";
 import { Rifm } from "rifm";
-import TextField from "@material-ui/core/TextField";
 import { injectIntl } from "react-intl";
-// import { str2Float } from "./utils";
-import { withStyles } from "@material-ui/core/styles";
-
-const CssTextField = withStyles({
-  root: {
-    "& label.Mui-focused": {
-      color: "green"
-    },
-    "& .MuiInput-underline:after": {
-      borderBottomColor: "green"
-    },
-    /*"& .MuiOutlinedInput-root": {
-      "& fieldset": {
-        borderColor: "red"
-      },
-      "&:hover fieldset": {
-        borderColor: "yellow"
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "green"
-      }
-    },*/
-    "& .MuiOutlinedInput-root.Mui-disabled": {
-      "& fieldset": {
-        borderColor: "green",
-        backgroundColor: "rgba(90,90,90,0.1)"
-      }
-    }
-  }
-})(TextField);
-
-const useStyles = makeStyles(theme =>
-  createStyles({
-    root: {
-      flexGrow: 1
-    },
-    spacer: {
-      marginTop: "2em",
-      marginBottom: "2em"
-    },
-    container: {
-      display: "flex",
-      flexWrap: "wrap"
-    },
-    textField: {
-      marginLeft: theme.spacing(1),
-      marginRight: theme.spacing(1),
-      width: 200
-    },
-    dense: {
-      marginTop: 19
-    },
-    menu: {
-      width: 200
-    },
-    formControl: {
-      margin: theme.spacing(1)
-    },
-    returnNegative: {
-      fontWeight: "bold",
-      color: "red"
-    },
-    returnPositive: {
-      fontWeight: "bold",
-      color: "green"
-    },
-    button: {
-      margin: theme.spacing(1)
-    },
-    leftIcon: {
-      marginRight: theme.spacing(1)
-    },
-    bmcButtonImg: {
-      width: 35,
-      marginBottom: 1,
-      boxShadow: "none",
-      border: "none",
-      verticalAlign: "middle"
-    },
-    bmcButton: {
-      padding: "7px 10px 7px 10px",
-      // lineHeight: 35,
-      height: 51,
-      minWidth: 217,
-      textDecoration: "none",
-      display: "inline-flex",
-      color: "#ffffff",
-      backgroundColor: "#79D6B5",
-      borderRadius: 5,
-      border: "1px solid transparent",
-      padding: "7px 10px 7px 10px",
-      fontSize: 20,
-      letterSpacing: 0.6,
-      boxShadow: "0px 1px 2px rgba(190, 190, 190, 0.5)",
-      "-webkit-box-shadow": "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
-      margin: "0 auto",
-      //fontFamily: "'Lato', cursive",
-      "-webkit-box-sizing": "border-box",
-      boxSizing: "border-box",
-      "-o-transition": "0.3s all linear",
-      "-webkit-transition": "0.3s all linear",
-      "-moz-transition": "0.3s all linear",
-      "-ms-transition": "0.3s all linear",
-      transition: "0.3s all linear",
-      "&:hover": {
-        textDecoration: "none",
-        boxShadow: "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
-        opacity: 0.85,
-        color: "#ffffff"
-      },
-      "&:focus": {
-        textDecoration: "none",
-        boxShadow: "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
-        opacity: 0.85,
-        color: "#ffffff"
-      },
-      "&:active": {
-        textDecoration: "none",
-        boxShadow: "0px 1px 2px 2px rgba(190, 190, 190, 0.5)",
-        opacity: 0.85,
-        color: "#ffffff"
-      }
-    }
-  })
-);
+import { InputNumber } from "primereact/inputnumber";
+import { Fieldset } from "primereact/fieldset";
+import { Button } from "primereact/button";
 
 const App = props => {
   const INTL = props.intl;
-  const classes = useStyles();
   const [price, setPrice] = useState("");
   const [provision, setProvision] = useState(0.0);
   const [buyingcosts, setBuyingcosts] = useState(6.5);
   const [interest, setInterest] = useState(1.8); // Zins
   const [repayment, setRepayment] = useState(2); // Tilgung
-  const [condoFee, setCondoFee] = useState("0.00"); // Hausgeld
-  const [rentIndex, setRentIndex] = useState("0.00"); // Mietspiegel
-  const [rent, setRent] = useState("0.00"); // Mieteinnahmen
+  const [condoFee, setCondoFee] = useState(0.0); // Hausgeld
+  const [rentIndex, setRentIndex] = useState(0.0); // Mietspiegel
+  const [rent, setRent] = useState(0.0); // Mieteinnahmen
   const [livingSpace, setLivingSpace] = useState(0); // Wohnflaeche
   const [totalAmount, setTotalAmount] = useState(""); // Gesamtsumme
-  const [pricePerSpace, setPricePerSpace] = useState("0.00"); // Preis pro QM
-  const [interestPerMonth, setInterestPerMonth] = useState(""); // Zinsen / Monat
-  const [repaymentPerMonth, setRepaymentPerMonth] = useState(""); // Tilgung / Monat
+  const [pricePerSpace, setPricePerSpace] = useState(0.0); // Preis pro QM
+  const [interestPerMonth, setInterestPerMonth] = useState(0.0); // Zinsen / Monat
+  const [repaymentPerMonth, setRepaymentPerMonth] = useState(0.0); // Tilgung / Monat
   const [monthlyCosts, setMonthlyCosts] = useState(0); // Monatliche Kosten
   const [monthlyCostsNoBuyingCosts, setMonthlyCostsNoBuyingCosts] = useState(0); // Monatliche Kosten ohne NK
   const [monthlyCostsInvest, setMonthlyCostsInvest] = useState(0); // Monatliche Kosten Anlage
@@ -217,13 +84,13 @@ const App = props => {
   };
 
   const numberFormat = theString => {
-    const r = parseFloat(theString.replace(/[^\d]+/gi, ""), 10);
+    const r = parseFloat(theString, 10);
     return r ? r.toLocaleString("de-DE") : "";
   };
 
   const getBuyingCostsFormatted = () => {
     if (price && price !== "" && buyingcosts) {
-      const parsedPrice = parseFloat(price.replace(/[^\d]+/, ""));
+      const parsedPrice = parseFloat(price);
       const costs = parsedPrice * (buyingcosts / 100);
       return formatCurrency(costs);
     }
@@ -232,7 +99,7 @@ const App = props => {
 
   const getCommissionCostsFormatted = () => {
     if (price && price !== "" && provision) {
-      const parsedPrice = parseFloat(price.replace(/[^\d]+/, ""));
+      const parsedPrice = parseFloat(price);
       const costs = parsedPrice * (provision / 100);
       return formatCurrency(costs);
     }
@@ -245,19 +112,25 @@ const App = props => {
       currency: "EUR"
     });
 
+  const calcRendite = () => {
+    if (monthlyCosts && !isNaN(monthlyCosts)) {
+      const v_monthly = parseFloat(monthlyCosts) || 0;
+      const brutto = parseFloat((rent * 100) / v_monthly);
+      if (brutto > 0) return Math.round(brutto - 100);
+      return 0;
+    }
+  };
+
   const proposeRent = () => {
     if (monthlyCosts && !isNaN(monthlyCosts)) {
-      const v_monthly = parseFloat(monthlyCosts);
-      const wantedRent = v_monthly + v_monthly * 0.04;
-      console.log(Math.round(wantedRent));
-      setRent(Math.round(wantedRent).toString());
+      const v_monthly = parseFloat(monthlyCosts) || 0;
+      const wantedRent = parseFloat(v_monthly + v_monthly * 0.06);
+      setRent(Math.round(wantedRent));
       setRentIndex(
-        livingSpace
-          ? Math.round(Math.round(wantedRent) / livingSpace).toString()
-          : "0"
+        livingSpace ? Math.round(Math.round(wantedRent) / livingSpace) : 0
       );
       recalculate(
-        parseFloat(price.replace(/\./g, "")),
+        parseFloat(price),
         provision,
         buyingcosts,
         livingSpace,
@@ -273,537 +146,416 @@ const App = props => {
   return (
     <React.Fragment>
       <AppBar />
-      <div className={classes.spacer}>
-        <Container maxWidth="lg">
-          <form noValidate autoComplete="off">
-            <Grid container className={classes.root} spacing={2}>
-              <Grid container item className={classes.root} spacing={2} xs={12}>
-                <Grid item xs>
-                  <Rifm
-                    value={price}
-                    onChange={newVal => {
-                      setPrice(newVal);
-                      recalculate(
-                        parseFloat(newVal.replace(/\./g, "")),
-                        provision,
-                        buyingcosts,
-                        livingSpace,
-                        interest,
-                        repayment,
-                        parseFloat(condoFee),
-                        parseFloat(rent),
-                        parseFloat(rentIndex)
-                      );
-                    }}
-                    format={numberFormat}
-                    replace={v => v.replace(",", ".")}
-                  >
-                    {({ value, onChange }) => (
-                      <TextField
-                        id="buyprice"
-                        label="Kaufpreis"
-                        className={classes.textField}
-                        value={value}
-                        onChange={onChange}
-                        margin="normal"
-                        type="tel"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              &euro;
-                            </InputAdornment>
-                          )
-                        }}
-                      />
-                    )}
-                  </Rifm>
-                </Grid>
-                <Grid item xs>
-                  <TextField
-                    id="provision"
-                    label="Maklerprovision"
-                    className={classes.textField}
-                    value={provision}
-                    onChange={e => {
-                      setProvision(parseFloat(e.target.value));
-                      recalculate(
-                        parseFloat(price.replace(/\./g, "")),
-                        parseFloat(e.target.value),
-                        buyingcosts,
-                        livingSpace,
-                        interest,
-                        repayment,
-                        parseFloat(condoFee),
-                        parseFloat(rent),
-                        parseFloat(rentIndex)
-                      );
-                    }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">%</InputAdornment>
-                      )
-                    }}
-                    helperText={getCommissionCostsFormatted()}
-                  />
-                </Grid>
-                <Grid item xs>
-                  <TextField
-                    id="buyingcosts"
-                    label="Kaufnebenkosten"
-                    className={classes.textField}
-                    value={buyingcosts}
-                    onChange={e => {
-                      setBuyingcosts(parseFloat(e.target.value));
-                      recalculate(
-                        parseFloat(price.replace(/\./g, "")),
-                        provision,
-                        parseFloat(e.target.value),
-                        livingSpace,
-                        interest,
-                        repayment,
-                        parseFloat(condoFee),
-                        parseFloat(rent),
-                        parseFloat(rentIndex)
-                      );
-                    }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">%</InputAdornment>
-                      )
-                    }}
-                    helperText={getBuyingCostsFormatted()}
-                  />
-                </Grid>
-                <Grid item xs>
-                  <TextField
-                    id="interest"
-                    label="Zins p.a."
-                    className={classes.textField}
-                    value={interest}
-                    onChange={e => {
-                      const parsedInterest = parseFloat(
-                        e.target.value.replace(",", ".")
-                      );
-                      setInterest(parsedInterest);
-                      recalculate(
-                        parseFloat(price.replace(/\./g, "")),
-                        provision,
-                        buyingcosts,
-                        livingSpace,
-                        parsedInterest,
-                        repayment,
-                        parseFloat(condoFee),
-                        parseFloat(rent),
-                        parseFloat(rentIndex)
-                      );
-                    }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">%</InputAdornment>
-                      )
-                    }}
-                  />
-                </Grid>
-                <Grid item xs>
-                  <TextField
-                    id="repayment"
-                    label="Tilgung p.a."
-                    className={classes.textField}
-                    value={repayment}
-                    onChange={e => {
-                      setRepayment(parseFloat(e.target.value));
-                      recalculate(
-                        parseFloat(price.replace(/\./g, "")),
-                        provision,
-                        buyingcosts,
-                        livingSpace,
-                        interest,
-                        parseFloat(e.target.value),
-                        parseFloat(condoFee),
-                        parseFloat(rent),
-                        parseFloat(rentIndex)
-                      );
-                    }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">%</InputAdornment>
-                      )
-                    }}
-                  />
-                </Grid>
-              </Grid>
-              <Grid container item className={classes.root} spacing={2} xs={12}>
-                <Grid item xs>
-                  <Rifm
-                    value={condoFee}
-                    onChange={newVal => {
-                      setCondoFee(newVal);
-                      recalculate(
-                        parseFloat(price.replace(/\./g, "")),
-                        provision,
-                        buyingcosts,
-                        livingSpace,
-                        interest,
-                        repayment,
-                        parseFloat(newVal),
-                        parseFloat(rent),
-                        parseFloat(rentIndex)
-                      );
-                    }}
-                    format={numberFormat}
-                    replace={v => v.replace(",", ".")}
-                  >
-                    {({ value, onChange }) => (
-                      <TextField
-                        id="condo-fee"
-                        label="Hausgeld"
-                        className={classes.textField}
-                        value={value}
-                        onChange={onChange}
-                        margin="normal"
-                        type="tel"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              &euro;
-                            </InputAdornment>
-                          )
-                        }}
-                      />
-                    )}
-                  </Rifm>
-                </Grid>
-                <Grid item xs>
-                  <Rifm
-                    value={rentIndex}
-                    onChange={newVal => {
-                      setRentIndex(newVal);
-                      if (livingSpace) {
-                        const newRent = Math.round(
-                          parseFloat(newVal) * livingSpace
-                        );
-                        setRent(newRent.toString());
-                        recalculate(
-                          parseFloat(price.replace(/\./g, "")),
-                          provision,
-                          buyingcosts,
-                          livingSpace,
-                          interest,
-                          repayment,
-                          parseFloat(condoFee),
-                          newRent,
-                          parseFloat(newVal)
-                        );
-                      } else {
-                        recalculate(
-                          parseFloat(price.replace(/\./g, "")),
-                          provision,
-                          buyingcosts,
-                          livingSpace,
-                          interest,
-                          repayment,
-                          parseFloat(condoFee),
-                          parseFloat(rent),
-                          parseFloat(newVal)
-                        );
-                      }
-                    }}
-                    format={numberFormat}
-                    replace={v => v.replace(",", ".")}
-                  >
-                    {({ value, onChange }) => (
-                      <TextField
-                        id="rent-index"
-                        label="Mietspiegel €/m²"
-                        className={classes.textField}
-                        value={value}
-                        onChange={onChange}
-                        margin="normal"
-                        type="tel"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              &euro;
-                            </InputAdornment>
-                          )
-                        }}
-                      />
-                    )}
-                  </Rifm>
-                </Grid>
-                <Grid item xs>
-                  <Rifm
-                    value={rent}
-                    onChange={newVal => {
-                      setRent(newVal);
-                      if (livingSpace) {
-                        setRentIndex(
-                          Math.round(
-                            parseFloat(newVal) / livingSpace
-                          ).toString()
-                        );
-                      }
-                      recalculate(
-                        parseFloat(price.replace(/\./g, "")),
-                        provision,
-                        buyingcosts,
-                        livingSpace,
-                        interest,
-                        repayment,
-                        parseFloat(condoFee),
-                        parseFloat(newVal),
-                        parseFloat(rentIndex)
-                      );
-                    }}
-                    format={numberFormat}
-                    replace={v => v.replace(",", ".")}
-                  >
-                    {({ value, onChange }) => (
-                      <TextField
-                        id="rent"
-                        label="Mieteinnahmen / Monat"
-                        className={classes.textField}
-                        value={value}
-                        onChange={onChange}
-                        margin="normal"
-                        type="tel"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              &euro;
-                            </InputAdornment>
-                          )
-                        }}
-                      />
-                    )}
-                  </Rifm>
-                </Grid>
-                <Grid item xs>
-                  <TextField
-                    id="space"
-                    label="Wohnfläche"
-                    className={classes.textField}
-                    value={livingSpace}
-                    onChange={e => {
-                      setLivingSpace(parseFloat(e.target.value));
-                      recalculate(
-                        parseFloat(price.replace(/\./g, "")),
-                        provision,
-                        buyingcosts,
-                        parseFloat(e.target.value),
-                        interest,
-                        repayment,
-                        parseFloat(condoFee),
-                        parseFloat(rent),
-                        parseFloat(rentIndex)
-                      );
-                    }}
-                    margin="normal"
-                    type="number"
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">m²</InputAdornment>
-                      )
-                    }}
-                  />
-                </Grid>
-                <Grid item xs>
-                  {/*<Rifm
-                    value={totalAmount}
-                    format={numberFormat}
-                    replace={v => v.replace(",", ".")}
-                  >
-                    {({ value, onChange }) => (
-                      <CssTextField
-                        id="total-amount"
-                        label="Gesamtsumme"
-                        className={classes.textField}
-                        value={value}
-                        margin="normal"
-                        // type="number"
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              &euro;
-                            </InputAdornment>
-                          )
-                        }}
-                        disabled
-                        variant="outlined"
-                      />
-                    )}
-                      </Rifm>*/}
-                  <CssTextField
-                    id="total-amount"
-                    label="Gesamtsumme"
-                    className={classes.textField}
-                    value={formatCurrency(totalAmount)}
-                    margin="normal"
-                    // type="number"
-                    // InputProps={{
-                    //   endAdornment: (
-                    //     <InputAdornment position="end">&euro;</InputAdornment>
-                    //   )
-                    // }}
-                    disabled
-                    variant="outlined"
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-          </form>
-        </Container>
-        <Box borderBottom={1} m={2} />
-        <Container maxWidth="lg">
-          <Grid container className={classes.root} spacing={2}>
-            <Grid container item className={classes.root} spacing={2} xs={12}>
-              <Grid item xs>
-                <TextField
-                  id="pricePerSpace"
-                  label="€ / m²"
-                  className={classes.textField}
-                  value={formatCurrency(pricePerSpace)}
-                  margin="normal"
-                  // type="number"
-                  // InputProps={{
-                  //   endAdornment: (
-                  //     <InputAdornment position="end">&euro;</InputAdornment>
-                  //   )
-                  // }}
-                  disabled
-                />
-              </Grid>
-              <Grid item xs>
-                <TextField
-                  id="interestPerMonth"
-                  label="Zinsen / Monat"
-                  className={classes.textField}
-                  value={formatCurrency(interestPerMonth)}
-                  margin="normal"
-                  // type="number"
-                  // InputProps={{
-                  //   endAdornment: (
-                  //     <InputAdornment position="end">&euro;</InputAdornment>
-                  //   )
-                  // }}
-                  disabled
-                />
-              </Grid>
-              <Grid item xs>
-                <TextField
-                  id="repaymentPerMonth"
-                  label="Tilgung / Monat"
-                  className={classes.textField}
-                  value={formatCurrency(repaymentPerMonth)}
-                  margin="normal"
-                  // type="number"
-                  // InputProps={{
-                  //   endAdornment: (
-                  //     <InputAdornment position="end">&euro;</InputAdornment>
-                  //   )
-                  // }}
-                  disabled
-                />
-              </Grid>
-              <Grid item xs>
-                <CssTextField
-                  id="monthly-costs"
-                  label="Kosten / Monat"
-                  className={classes.textField}
-                  value={formatCurrency(monthlyCosts)}
-                  margin="normal"
-                  // type="number"
-                  // InputProps={{
-                  //   endAdornment: (
-                  //     <InputAdornment position="end">&euro;</InputAdornment>
-                  //   )
-                  // }}
-                  disabled
-                  variant="outlined"
-                  helperText={`Ohne NK: ${formatCurrency(
-                    monthlyCostsNoBuyingCosts
-                  )}`}
-                />
-              </Grid>
-              <Grid item xs>
-                <CssTextField
-                  id="monthly-costs-invest"
-                  label="Kosten / Monat (Anlage)"
-                  className={classes.textField}
-                  value={formatCurrency(monthlyCostsInvest)}
-                  margin="normal"
-                  // type="number"
-                  // InputProps={{
-                  //   endAdornment: (
-                  //     <InputAdornment position="end">&euro;</InputAdornment>
-                  //   )
-                  // }}
-                  disabled
-                  variant="outlined"
-                  helperText={
-                    parseFloat(monthlyCostsInvest) > 0 ? (
-                      <span className={classes.returnNegative}>Verlust</span>
-                    ) : parseFloat(monthlyCostsInvest) < 0 ? (
-                      <span className={classes.returnPositive}>Gewinn</span>
-                    ) : (
-                      <span />
-                    )
-                  }
-                />
-              </Grid>
-            </Grid>
-          </Grid>
-        </Container>
-        <Container maxWidth="lg">
-          <Grid container className={classes.root} spacing={2}>
-            <Grid item xs={12} />
+      <form
+        noValidate
+        autoComplete="off"
+        className="p-m-4"
+        onSubmit={e => e.preventDefault()}
+      >
+        <div className="p-fluid p-formgrid p-grid">
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="fprice">Kaufpreis</label>
+            <InputNumber
+              id="fprice"
+              value={price}
+              onValueChange={e => {
+                const parsed = parseFloat(e.value) || 0;
+                setPrice(parsed);
+                recalculate(
+                  parseFloat(parsed),
+                  provision,
+                  buyingcosts,
+                  livingSpace,
+                  interest,
+                  repayment,
+                  parseFloat(condoFee),
+                  parseFloat(rent),
+                  parseFloat(rentIndex)
+                );
+              }}
+              mode="currency"
+              currency="EUR"
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              &nbsp;
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="fprovision">Maklerprovision</label>
+            <InputNumber
+              id="fprovision"
+              value={provision}
+              onValueChange={e => {
+                setProvision(e.value);
+                if (!e.value || !parseFloat(e.value)) return;
+                recalculate(
+                  parseFloat(price),
+                  parseFloat(e.value),
+                  buyingcosts,
+                  livingSpace,
+                  interest,
+                  repayment,
+                  parseFloat(condoFee),
+                  parseFloat(rent),
+                  parseFloat(rentIndex)
+                );
+              }}
+              mode="currency"
+              currency="EUR"
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fprovision-help" className="p-d-block">
+              {getCommissionCostsFormatted()}
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="fbuyingcosts">Kaufnebenkosten</label>
+            <InputNumber
+              id="fbuyingcosts"
+              value={buyingcosts}
+              onValueChange={e => {
+                setProvision(e.value);
+                if (!e.value || !parseFloat(e.value)) return;
+                recalculate(
+                  parseFloat(price),
+                  provision,
+                  parseFloat(e.value),
+                  livingSpace,
+                  interest,
+                  repayment,
+                  parseFloat(condoFee),
+                  parseFloat(rent),
+                  parseFloat(rentIndex)
+                );
+              }}
+              mode="currency"
+              currency="EUR"
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              {getBuyingCostsFormatted()}
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="finterest">Zins p.a.</label>
+            <InputNumber
+              id="finterest"
+              value={interest}
+              prefix="%"
+              onValueChange={e => {
+                setInterest(e.value);
+                if (!e.value || !parseFloat(e.value)) return;
+                const parsedInterest = parseFloat(e.value);
+                recalculate(
+                  parseFloat(price),
+                  provision,
+                  buyingcosts,
+                  livingSpace,
+                  parsedInterest,
+                  repayment,
+                  parseFloat(condoFee),
+                  parseFloat(rent),
+                  parseFloat(rentIndex)
+                );
+              }}
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              &nbsp;
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="frepayment">Tilgung p.a.</label>
+            <InputNumber
+              id="frepayment"
+              value={repayment}
+              prefix="%"
+              onValueChange={e => {
+                setRepayment(parseFloat(e.value));
+                recalculate(
+                  parseFloat(price),
+                  provision,
+                  buyingcosts,
+                  livingSpace,
+                  interest,
+                  parseFloat(e.value),
+                  parseFloat(condoFee),
+                  parseFloat(rent),
+                  parseFloat(rentIndex)
+                );
+              }}
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              &nbsp;
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="fcondoFee">Hausgeld</label>
+            <InputNumber
+              id="fcondoFee"
+              value={condoFee}
+              onValueChange={e => {
+                setCondoFee(parseFloat(e.value));
+                recalculate(
+                  parseFloat(price),
+                  provision,
+                  buyingcosts,
+                  livingSpace,
+                  interest,
+                  repayment,
+                  parseFloat(e.value),
+                  parseFloat(rent),
+                  parseFloat(rentIndex)
+                );
+              }}
+              mode="currency"
+              currency="EUR"
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              &nbsp;
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="frentIndex">Mietspiegel €/m²</label>
+            <InputNumber
+              id="frentIndex"
+              value={rentIndex}
+              onValueChange={e => {
+                setRentIndex(parseFloat(e.value));
+                if (livingSpace) {
+                  const newRent = Math.round(parseFloat(e.value) * livingSpace);
+                  setRent(newRent.toString());
+                  recalculate(
+                    parseFloat(price),
+                    provision,
+                    buyingcosts,
+                    livingSpace,
+                    interest,
+                    repayment,
+                    parseFloat(condoFee),
+                    newRent,
+                    parseFloat(e.value)
+                  );
+                } else {
+                  recalculate(
+                    parseFloat(price),
+                    provision,
+                    buyingcosts,
+                    livingSpace,
+                    interest,
+                    repayment,
+                    parseFloat(condoFee),
+                    parseFloat(rent),
+                    parseFloat(e.value)
+                  );
+                }
+              }}
+              mode="currency"
+              currency="EUR"
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              &nbsp;
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="frent">Mieteinnahmen / Monat</label>
+            <InputNumber
+              id="frent"
+              value={rent}
+              onValueChange={e => {
+                setRent(e.value);
+                if (livingSpace) {
+                  setRentIndex(
+                    Math.round(parseFloat(e.value) / livingSpace).toString()
+                  );
+                }
+                recalculate(
+                  parseFloat(price),
+                  provision,
+                  buyingcosts,
+                  livingSpace,
+                  interest,
+                  repayment,
+                  parseFloat(condoFee),
+                  parseFloat(e.value),
+                  parseFloat(rentIndex)
+                );
+              }}
+              mode="currency"
+              currency="EUR"
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              &nbsp;
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="flivingSpace">Wohnfläche</label>
+            <InputNumber
+              id="flivingSpace"
+              value={livingSpace}
+              onValueChange={e => {
+                setLivingSpace(parseFloat(e.value));
+                recalculate(
+                  parseFloat(price),
+                  provision,
+                  buyingcosts,
+                  parseFloat(e.value),
+                  interest,
+                  repayment,
+                  parseFloat(condoFee),
+                  parseFloat(rent),
+                  parseFloat(rentIndex)
+                );
+              }}
+              suffix=" m²"
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              &nbsp;
+            </small>
+          </div>
+          <div className="p-field p-col-12 p-md-3 p-grid">
+            <label htmlFor="ftotalamount">Gesamtsumme</label>
+            <InputNumber
+              id="ftotalamount"
+              value={totalAmount}
+              disabled
+              mode="currency"
+              currency="EUR"
+              locale="de-DE"
+              minFractionDigits={2}
+            />
+            <small id="fbuyingcosts-help" className="p-d-block">
+              &nbsp;
+            </small>
+          </div>
+        </div>
+        <Fieldset legend="Ergebnis">
+          <div className="p-fluid p-formgrid p-grid">
+            <div className="p-field p-col-12 p-md-3 p-grid">
+              <label htmlFor="fpriceperspace">€ / m²</label>
+              <InputNumber
+                id="fpriceperspace"
+                value={pricePerSpace}
+                disabled
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                minFractionDigits={2}
+              />
+              <small id="fbuyingcosts-help" className="p-d-block">
+                &nbsp;
+              </small>
+            </div>
+            <div className="p-field p-col-12 p-md-3 p-grid">
+              <label htmlFor="finterestPerMonth">Zinsen / Monat</label>
+              <InputNumber
+                id="finterestPerMonth"
+                value={interestPerMonth}
+                disabled
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                minFractionDigits={2}
+              />
+              <small id="fbuyingcosts-help" className="p-d-block">
+                &nbsp;
+              </small>
+            </div>
+            <div className="p-field p-col-12 p-md-3 p-grid">
+              <label htmlFor="frepaymentPerMonth">Tilgung / Monat</label>
+              <InputNumber
+                id="frepaymentPerMonth"
+                value={repaymentPerMonth}
+                disabled
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                minFractionDigits={2}
+              />
+              <small id="fbuyingcosts-help" className="p-d-block">
+                &nbsp;
+              </small>
+            </div>
+            <div className="p-field p-col-12 p-md-3 p-grid">
+              <label htmlFor="fmonthlyCosts">Kosten / Monat</label>
+              <InputNumber
+                id="fmonthlyCosts"
+                value={monthlyCosts}
+                disabled
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                minFractionDigits={2}
+              />
+              <small
+                id="fmonthlyCosts-help"
+                className="p-d-block"
+              >{`Ohne NK: ${formatCurrency(monthlyCostsNoBuyingCosts)}`}</small>
+            </div>
+            <div className="p-field p-col-12 p-md-3 p-grid">
+              <label htmlFor="fmonthlyCostsInvest">
+                Kosten / Monat (Anlage)
+              </label>
+              <InputNumber
+                id="fmonthlyCostsInvest"
+                value={monthlyCostsInvest}
+                disabled
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                minFractionDigits={2}
+              />
+              <small id="fmonthlyCostsInvest-help" className="p-d-block">
+                {`${calcRendite()} % - `}
+                {parseFloat(monthlyCostsInvest) > 0 ? (
+                  <span className="text-red">Verlust</span>
+                ) : parseFloat(monthlyCostsInvest) < 0 ? (
+                  <span className="text-green">Gewinn</span>
+                ) : (
+                  <span />
+                )}
+              </small>
+            </div>
+          </div>
+          <span className="p-buttonset">
             <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              className={classes.button}
+              label="Miete vorschlagen"
+              icon="pi pi-dollar"
               onClick={() => proposeRent()}
-            >
-              <MonetizationOnIcon className={classes.leftIcon} />
-              Miete vorschlagen
-            </Button>
+            />
             <a href="https://www.sparkasse.de/service/rechner/nebenkostenrechner.html">
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                className={classes.button}
-              >
-                SPK NK Rechner
-              </Button>
+              <Button label="SPK NK Rechner" />
             </a>
-            <Grid item xs={12}>
-              <a
-                className={classes.bmcButton}
-                target="_blank"
-                href="https://www.buymeacoffee.com/Robs"
-              >
-                <img
-                  className={classes.bmcButtonImg}
-                  src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
-                  alt="Kauf mir einen Kaffee"
-                />
-                <span style={{ marginLeft: 15, fontSize: 19 }}>
-                  Kauf mir einen Kaffee
-                </span>
-              </a>
-            </Grid>
-          </Grid>
-        </Container>
-      </div>
+          </span>
+          <a
+            className="bmcButton"
+            target="_blank"
+            href="https://www.buymeacoffee.com/Robs"
+          >
+            <img
+              className="bmcButtonImg"
+              src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
+              alt="Kauf mir einen Kaffee"
+            />
+            <span style={{ marginLeft: 15, fontSize: 19 }}>
+              Kauf mir einen Kaffee
+            </span>
+          </a>
+        </Fieldset>
+      </form>
     </React.Fragment>
   );
 };

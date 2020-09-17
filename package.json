@@ -9,9 +9,9 @@
   "author": "Robin <> (https://github.com/DarkSmile92)",
   "homepage": "https://darksmile92.github.io/rik/",
   "dependencies": {
-    "@material-ui/core": "^4.4.0",
-    "@material-ui/icons": "^4.2.1",
-    "@material-ui/styles": "^4.3.3",
+    "primeflex": "^2.0.0",
+    "primeicons": "^4.0.0",
+    "primereact": "^5.0.0-rc.2",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-intl": "^2.9.0",
