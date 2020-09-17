@@ -230,6 +230,15 @@ const App = props => {
     return "0,00€";
   };
 
+  const getCommissionCostsFormatted = () => {
+    if (price && price !== "" && provision) {
+      const parsedPrice = parseFloat(price.replace(/[^\d]+/, ""));
+      const costs = parsedPrice * (provision / 100);
+      return formatCurrency(costs);
+    }
+    return "0,00€";
+  };
+
   const formatCurrency = value =>
     INTL.formatNumber(value, {
       style: "currency",
@@ -336,6 +345,7 @@ const App = props => {
                         <InputAdornment position="end">%</InputAdornment>
                       )
                     }}
+                    helperText={getCommissionCostsFormatted()}
                   />
                 </Grid>
                 <Grid item xs>
