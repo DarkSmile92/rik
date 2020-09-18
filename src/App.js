@@ -1,14 +1,17 @@
 import "./App.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppBar from "./AppBar";
-import { Rifm } from "rifm";
 import { injectIntl } from "react-intl";
 import { InputNumber } from "primereact/inputnumber";
 import { Fieldset } from "primereact/fieldset";
 import { Button } from "primereact/button";
+import { useLocation } from "react-router-dom";
+import qs from "qs";
+import { parseImmoScout } from "./parser";
 
 const App = props => {
   const INTL = props.intl;
+  let location = useLocation();
   const [price, setPrice] = useState("");
   const [provision, setProvision] = useState(0.0);
   const [buyingcosts, setBuyingcosts] = useState(6.5);
@@ -25,6 +28,16 @@ const App = props => {
   const [monthlyCosts, setMonthlyCosts] = useState(0); // Monatliche Kosten
   const [monthlyCostsNoBuyingCosts, setMonthlyCostsNoBuyingCosts] = useState(0); // Monatliche Kosten ohne NK
   const [monthlyCostsInvest, setMonthlyCostsInvest] = useState(0); // Monatliche Kosten Anlage
+
+  useEffect(() => {
+    if (location) {
+      const params = qs.parse(location.search, { ignoreQueryPrefix: true });
+      if (params && params.hasOwnProperty("is")) {
+        // get immoscout url
+        console.log(parseImmoScout(params.is));
+      }
+    }
+  }, [location]);
 
   const recalculate = (
     _price,

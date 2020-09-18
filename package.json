@@ -12,9 +12,11 @@
     "primeflex": "^2.0.0",
     "primeicons": "^4.0.0",
     "primereact": "^5.0.0-rc.2",
+    "qs": "^6.9.4",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-intl": "^2.9.0",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "^3.3.0",
     "react-toastify": "^5.3.2",
     "rifm": "^0.9.1"

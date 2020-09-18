@@ -12,14 +12,17 @@ import { IntlProvider, addLocaleData } from "react-intl";
 import App from "./App";
 import React from "react";
 import ReactDOM from "react-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 
 addLocaleData([...de]);
 
 ReactDOM.render(
-  <IntlProvider locale="de">
-    <App />
-  </IntlProvider>,
-  document.getElementById("root")
+	<Router>
+		<IntlProvider locale="de">
+			<App />
+		</IntlProvider>
+	</Router>,
+	document.getElementById("root")
 );
 
 // If you want your app to work offline and load faster, you can change
