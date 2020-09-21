@@ -215,9 +215,8 @@ const App = props => {
                   parseFloat(rentIndex)
                 );
               }}
+              suffix="%"
               mode="currency"
-              currency="EUR"
-              locale="de-DE"
               minFractionDigits={2}
             />
             <small id="fprovision-help" className="p-d-block">
@@ -258,7 +257,7 @@ const App = props => {
             <InputNumber
               id="finterest"
               value={interest}
-              prefix="%"
+              suffix="%"
               onValueChange={e => {
                 setInterest(e.value);
                 if (!e.value || !parseFloat(e.value)) return;
@@ -287,7 +286,7 @@ const App = props => {
             <InputNumber
               id="frepayment"
               value={repayment}
-              prefix="%"
+              suffix="%"
               onValueChange={e => {
                 setRepayment(parseFloat(e.value));
                 recalculate(
