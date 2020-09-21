@@ -216,7 +216,7 @@ const App = props => {
                 );
               }}
               suffix="%"
-              mode="currency"
+              locale="de-DE"
               minFractionDigits={2}
             />
             <small id="fprovision-help" className="p-d-block">
