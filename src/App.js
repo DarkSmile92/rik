@@ -228,9 +228,10 @@ const App = props => {
             <InputNumber
               id="fbuyingcosts"
               value={buyingcosts}
+              suffix="%"
               onValueChange={e => {
                 setProvision(e.value);
-                if (!e.value || !parseFloat(e.value)) return;
+                if (!parseFloat(e.value)) return;
                 recalculate(
                   parseFloat(price),
                   provision,
@@ -243,8 +244,6 @@ const App = props => {
                   parseFloat(rentIndex)
                 );
               }}
-              mode="currency"
-              currency="EUR"
               locale="de-DE"
               minFractionDigits={2}
             />
