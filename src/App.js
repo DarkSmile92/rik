@@ -8,6 +8,14 @@ import { Button } from "primereact/button";
 import { useLocation } from "react-router-dom";
 import qs from "qs";
 import { parseImmoScout } from "./parser";
+import {
+  calcPricePerSQM,
+  calcGrandTotalBuying,
+  calcCommissionAmt,
+  calcBuycostsAmt,
+  calcInterestPerMonthAmt,
+  calcRepaymentPerMonthAmt
+} from "./utils";
 
 const App = props => {
   const INTL = props.intl;
@@ -15,7 +23,7 @@ const App = props => {
   const [price, setPrice] = useState("");
   const [provision, setProvision] = useState(0.0);
   const [buyingcosts, setBuyingcosts] = useState(6.5);
-  const [interest, setInterest] = useState(1.8); // Zins
+  const [interest, setInterest] = useState(1.2); // Zins
   const [repayment, setRepayment] = useState(2); // Tilgung
   const [condoFee, setCondoFee] = useState(0.0); // Hausgeld
   const [rentIndex, setRentIndex] = useState(0.0); // Mietspiegel
@@ -39,6 +47,20 @@ const App = props => {
     }
   }, [location]);
 
+  useEffect(() => {
+    if (livingSpace) {
+      setRentIndex(parseFloat(rent) / parseInt(livingSpace));
+    }
+  }, [rent]);
+
+  useEffect(() => {
+    if (rent) {
+      setRentIndex(parseFloat(rent) / parseInt(livingSpace));
+    } else if (rentIndex) {
+      setRent(parseFloat(rentIndex) * parseInt(livingSpace));
+    }
+  }, [livingSpace]);
+
   const recalculate = (
     _price,
     _provision,
@@ -51,15 +73,18 @@ const App = props => {
     _rentIndex
   ) => {
     if (isNaN(_price) || !_price || _price === 0) return;
-    const amt_provision = _price * ((isNaN(_provision) ? 0 : _provision) / 100);
-    const amt_buyingCosts =
-      _price * ((isNaN(_buyingcosts) ? 0 : _buyingcosts) / 100);
-    const amt_total = _price + amt_provision + amt_buyingCosts;
-    const amt_interest_yearly = (amt_total * _interest) / 100;
-    const amt_repayment_yearly = (amt_total * _repayment) / 100;
+    const amt_provision = calcCommissionAmt(_price, _provision);
+    const amt_total = calcGrandTotalBuying(_price, _provision, _buyingcosts);
+    // no buying costs
+    const amt_total_nbc = calcGrandTotalBuying(_price, _provision, 0);
+    const amt_interest_monthly = calcInterestPerMonthAmt(amt_total, _interest);
+    const amt_repayment_monthly = calcRepaymentPerMonthAmt(
+      amt_total,
+      _repayment
+    );
     const amt_costs_monthly =
-      amt_interest_yearly / 12 +
-      amt_repayment_yearly / 12 +
+      amt_interest_monthly +
+      amt_repayment_monthly +
       (isNaN(_condoFee) ? 0 : _condoFee);
     let amt_costs_monthly_invest = 0;
     // rent is higher ranked than rentIndex
@@ -77,20 +102,14 @@ const App = props => {
 
     setTotalAmount(amt_total.toString());
     if (_livingSpace && !isNaN(_livingSpace)) {
-      setPricePerSpace(
-        ((_price + amt_provision) / _livingSpace).toFixed(2).toString()
-      );
+      setPricePerSpace(calcPricePerSQM(_price, _livingSpace));
     }
-    setInterestPerMonth((amt_interest_yearly / 12).toFixed(2).toString());
-    setRepaymentPerMonth((amt_repayment_yearly / 12).toFixed(2).toString());
+    setInterestPerMonth(amt_interest_monthly.toString());
+    setRepaymentPerMonth(amt_repayment_monthly.toString());
     setMonthlyCosts(amt_costs_monthly.toFixed(2).toString());
-    // preis + provision
-    // _price + amt_provision
-    // zins = ((_price+amt_provision)*_interest) / 100
-    // tilgung = ((preis+provision)*_repayment) / 100
     setMonthlyCostsNoBuyingCosts(
-      ((_price + amt_provision) * _interest) / 100 / 12 +
-        ((_price + amt_provision) * _repayment) / 100 / 12 +
+      calcInterestPerMonthAmt(amt_total_nbc, _interest) +
+        calcRepaymentPerMonthAmt(amt_total_nbc, _repayment) +
         (isNaN(_condoFee) ? 0 : _condoFee)
     );
     setMonthlyCostsInvest(amt_costs_monthly_invest.toFixed(2).toString());
@@ -102,21 +121,13 @@ const App = props => {
   };
 
   const getBuyingCostsFormatted = () => {
-    if (price && price !== "" && buyingcosts) {
-      const parsedPrice = parseFloat(price);
-      const costs = parsedPrice * (buyingcosts / 100);
-      return formatCurrency(costs);
-    }
-    return "0,00€";
+    const costs = calcBuycostsAmt(price, buyingcosts);
+    return formatCurrency(costs);
   };
 
   const getCommissionCostsFormatted = () => {
-    if (price && price !== "" && provision) {
-      const parsedPrice = parseFloat(price);
-      const costs = parsedPrice * (provision / 100);
-      return formatCurrency(costs);
-    }
-    return "0,00€";
+    const costs = calcCommissionAmt(price, provision);
+    return formatCurrency(costs);
   };
 
   const formatCurrency = value =>
@@ -126,34 +137,15 @@ const App = props => {
     });
 
   const calcRendite = () => {
-    if (monthlyCosts && !isNaN(monthlyCosts)) {
-      const v_monthly = parseFloat(monthlyCosts) || 0;
-      const brutto = parseFloat((rent * 100) / v_monthly);
-      if (brutto > 0) return Math.round(brutto - 100);
-      return 0;
-    }
+    return ((rent * 12 * 100) / parseFloat(price)).toFixed(2);
   };
 
   const proposeRent = () => {
-    if (monthlyCosts && !isNaN(monthlyCosts)) {
-      const v_monthly = parseFloat(monthlyCosts) || 0;
-      const wantedRent = parseFloat(v_monthly + v_monthly * 0.06);
-      setRent(Math.round(wantedRent));
-      setRentIndex(
-        livingSpace ? Math.round(Math.round(wantedRent) / livingSpace) : 0
-      );
-      recalculate(
-        parseFloat(price),
-        provision,
-        buyingcosts,
-        livingSpace,
-        interest,
-        repayment,
-        parseFloat(condoFee),
-        wantedRent,
-        livingSpace ? wantedRent / livingSpace : 0
-      );
-    }
+    const wantedRent = (parseFloat(price) * 6) / 100 / 12;
+    setRent(Math.round(wantedRent));
+    setRentIndex(
+      livingSpace ? Math.round(Math.round(wantedRent) / livingSpace) : 0
+    );
   };
 
   return (
@@ -230,7 +222,7 @@ const App = props => {
               value={buyingcosts}
               suffix="%"
               onValueChange={e => {
-                setProvision(e.value);
+                setBuyingcosts(e.value);
                 if (!parseFloat(e.value)) return;
                 recalculate(
                   parseFloat(price),
@@ -545,7 +537,7 @@ const App = props => {
             <Button
               label="Miete vorschlagen"
               icon="pi pi-dollar"
-              onClick={() => proposeRent()}
+              onClick={proposeRent}
             />
             <a href="https://www.sparkasse.de/service/rechner/nebenkostenrechner.html">
               <Button label="SPK NK Rechner" />
