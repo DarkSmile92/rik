@@ -2,12 +2,12 @@ import "./App.css";
 import React, { useState, useEffect } from "react";
 import AppBar from "./AppBar";
 import { injectIntl } from "react-intl";
-import { InputNumber } from "primereact/inputnumber";
 import { Fieldset } from "primereact/fieldset";
 import { Button } from "primereact/button";
 import { useLocation } from "react-router-dom";
 import qs from "qs";
 import { parseImmoScout } from "./parser";
+import CurrencyInput from "./components/CurrencyInput";
 import {
   calcPricePerSQM,
   calcGrandTotalBuying,
@@ -20,7 +20,7 @@ import {
 const App = props => {
   const INTL = props.intl;
   let location = useLocation();
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState(0);
   const [provision, setProvision] = useState(0.0);
   const [buyingcosts, setBuyingcosts] = useState(6.5);
   const [interest, setInterest] = useState(1.2); // Zins
@@ -29,13 +29,6 @@ const App = props => {
   const [rentIndex, setRentIndex] = useState(0.0); // Mietspiegel
   const [rent, setRent] = useState(0.0); // Mieteinnahmen
   const [livingSpace, setLivingSpace] = useState(0); // Wohnflaeche
-  const [totalAmount, setTotalAmount] = useState(""); // Gesamtsumme
-  const [pricePerSpace, setPricePerSpace] = useState(0.0); // Preis pro QM
-  const [interestPerMonth, setInterestPerMonth] = useState(0.0); // Zinsen / Monat
-  const [repaymentPerMonth, setRepaymentPerMonth] = useState(0.0); // Tilgung / Monat
-  const [monthlyCosts, setMonthlyCosts] = useState(0); // Monatliche Kosten
-  const [monthlyCostsNoBuyingCosts, setMonthlyCostsNoBuyingCosts] = useState(0); // Monatliche Kosten ohne NK
-  const [monthlyCostsInvest, setMonthlyCostsInvest] = useState(0); // Monatliche Kosten Anlage
 
   useEffect(() => {
     if (location) {
@@ -46,79 +39,6 @@ const App = props => {
       }
     }
   }, [location]);
-
-  useEffect(() => {
-    if (livingSpace) {
-      setRentIndex(parseFloat(rent) / parseInt(livingSpace));
-    }
-  }, [rent]);
-
-  useEffect(() => {
-    if (rent) {
-      setRentIndex(parseFloat(rent) / parseInt(livingSpace));
-    } else if (rentIndex) {
-      setRent(parseFloat(rentIndex) * parseInt(livingSpace));
-    }
-  }, [livingSpace]);
-
-  const recalculate = (
-    _price,
-    _provision,
-    _buyingcosts,
-    _livingSpace,
-    _interest,
-    _repayment,
-    _condoFee,
-    _rent,
-    _rentIndex
-  ) => {
-    if (isNaN(_price) || !_price || _price === 0) return;
-    const amt_provision = calcCommissionAmt(_price, _provision);
-    const amt_total = calcGrandTotalBuying(_price, _provision, _buyingcosts);
-    // no buying costs
-    const amt_total_nbc = calcGrandTotalBuying(_price, _provision, 0);
-    const amt_interest_monthly = calcInterestPerMonthAmt(amt_total, _interest);
-    const amt_repayment_monthly = calcRepaymentPerMonthAmt(
-      amt_total,
-      _repayment
-    );
-    const amt_costs_monthly =
-      amt_interest_monthly +
-      amt_repayment_monthly +
-      (isNaN(_condoFee) ? 0 : _condoFee);
-    let amt_costs_monthly_invest = 0;
-    // rent is higher ranked than rentIndex
-    if (
-      (isNaN(_rent) || _rent === 0) &&
-      !isNaN(_rentIndex) &&
-      _rentIndex > 0 &&
-      !isNaN(_livingSpace) &&
-      _livingSpace > 0
-    ) {
-      amt_costs_monthly_invest = amt_costs_monthly - _rentIndex * _livingSpace;
-    } else {
-      amt_costs_monthly_invest = amt_costs_monthly - (isNaN(_rent) ? 0 : _rent);
-    }
-
-    setTotalAmount(amt_total.toString());
-    if (_livingSpace && !isNaN(_livingSpace)) {
-      setPricePerSpace(calcPricePerSQM(_price, _livingSpace));
-    }
-    setInterestPerMonth(amt_interest_monthly.toString());
-    setRepaymentPerMonth(amt_repayment_monthly.toString());
-    setMonthlyCosts(amt_costs_monthly.toFixed(2).toString());
-    setMonthlyCostsNoBuyingCosts(
-      calcInterestPerMonthAmt(amt_total_nbc, _interest) +
-        calcRepaymentPerMonthAmt(amt_total_nbc, _repayment) +
-        (isNaN(_condoFee) ? 0 : _condoFee)
-    );
-    setMonthlyCostsInvest(amt_costs_monthly_invest.toFixed(2).toString());
-  };
-
-  const numberFormat = theString => {
-    const r = parseFloat(theString, 10);
-    return r ? r.toLocaleString("de-DE") : "";
-  };
 
   const getBuyingCostsFormatted = () => {
     const costs = calcBuycostsAmt(price, buyingcosts);
@@ -141,11 +61,12 @@ const App = props => {
   };
 
   const proposeRent = () => {
-    const wantedRent = (parseFloat(price) * 6) / 100 / 12;
+    let wantedRent = (parseFloat(price) * 6) / 100 / 12;
+    if (condoFee > 0) {
+      wantedRent += condoFee;
+    }
     setRent(Math.round(wantedRent));
-    setRentIndex(
-      livingSpace ? Math.round(Math.round(wantedRent) / livingSpace) : 0
-    );
+    setRentIndex(livingSpace ? Math.round(wantedRent / livingSpace) : 0);
   };
 
   return (
@@ -160,28 +81,11 @@ const App = props => {
         <div className="p-fluid p-formgrid p-grid">
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="fprice">Kaufpreis</label>
-            <InputNumber
+            <CurrencyInput
               id="fprice"
               value={price}
-              onValueChange={e => {
-                const parsed = parseFloat(e.value) || 0;
-                setPrice(parsed);
-                recalculate(
-                  parseFloat(parsed),
-                  provision,
-                  buyingcosts,
-                  livingSpace,
-                  interest,
-                  repayment,
-                  parseFloat(condoFee),
-                  parseFloat(rent),
-                  parseFloat(rentIndex)
-                );
-              }}
-              mode="currency"
-              currency="EUR"
-              locale="de-DE"
-              minFractionDigits={2}
+              changed={setPrice}
+              name="fprice"
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               &nbsp;
@@ -189,27 +93,12 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="fprovision">Maklerprovision</label>
-            <InputNumber
+            <CurrencyInput
               id="fprovision"
+              name="fprovision"
               value={provision}
-              onValueChange={e => {
-                setProvision(e.value);
-                if (!e.value || !parseFloat(e.value)) return;
-                recalculate(
-                  parseFloat(price),
-                  parseFloat(e.value),
-                  buyingcosts,
-                  livingSpace,
-                  interest,
-                  repayment,
-                  parseFloat(condoFee),
-                  parseFloat(rent),
-                  parseFloat(rentIndex)
-                );
-              }}
+              changed={setProvision}
               suffix="%"
-              locale="de-DE"
-              minFractionDigits={2}
             />
             <small id="fprovision-help" className="p-d-block">
               {getCommissionCostsFormatted()}
@@ -217,27 +106,12 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="fbuyingcosts">Kaufnebenkosten</label>
-            <InputNumber
+            <CurrencyInput
               id="fbuyingcosts"
+              name="fbuyingcosts"
               value={buyingcosts}
+              changed={setBuyingcosts}
               suffix="%"
-              onValueChange={e => {
-                setBuyingcosts(e.value);
-                if (!parseFloat(e.value)) return;
-                recalculate(
-                  parseFloat(price),
-                  provision,
-                  parseFloat(e.value),
-                  livingSpace,
-                  interest,
-                  repayment,
-                  parseFloat(condoFee),
-                  parseFloat(rent),
-                  parseFloat(rentIndex)
-                );
-              }}
-              locale="de-DE"
-              minFractionDigits={2}
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               {getBuyingCostsFormatted()}
@@ -245,28 +119,12 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="finterest">Zins p.a.</label>
-            <InputNumber
+            <CurrencyInput
               id="finterest"
+              name="finterest"
               value={interest}
+              changed={setInterest}
               suffix="%"
-              onValueChange={e => {
-                setInterest(e.value);
-                if (!e.value || !parseFloat(e.value)) return;
-                const parsedInterest = parseFloat(e.value);
-                recalculate(
-                  parseFloat(price),
-                  provision,
-                  buyingcosts,
-                  livingSpace,
-                  parsedInterest,
-                  repayment,
-                  parseFloat(condoFee),
-                  parseFloat(rent),
-                  parseFloat(rentIndex)
-                );
-              }}
-              locale="de-DE"
-              minFractionDigits={2}
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               &nbsp;
@@ -274,26 +132,12 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="frepayment">Tilgung p.a.</label>
-            <InputNumber
+            <CurrencyInput
               id="frepayment"
+              name="frepayment"
               value={repayment}
+              changed={setRepayment}
               suffix="%"
-              onValueChange={e => {
-                setRepayment(parseFloat(e.value));
-                recalculate(
-                  parseFloat(price),
-                  provision,
-                  buyingcosts,
-                  livingSpace,
-                  interest,
-                  parseFloat(e.value),
-                  parseFloat(condoFee),
-                  parseFloat(rent),
-                  parseFloat(rentIndex)
-                );
-              }}
-              locale="de-DE"
-              minFractionDigits={2}
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               &nbsp;
@@ -301,27 +145,11 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="fcondoFee">Hausgeld</label>
-            <InputNumber
+            <CurrencyInput
               id="fcondoFee"
+              name="fcondoFee"
               value={condoFee}
-              onValueChange={e => {
-                setCondoFee(parseFloat(e.value));
-                recalculate(
-                  parseFloat(price),
-                  provision,
-                  buyingcosts,
-                  livingSpace,
-                  interest,
-                  repayment,
-                  parseFloat(e.value),
-                  parseFloat(rent),
-                  parseFloat(rentIndex)
-                );
-              }}
-              mode="currency"
-              currency="EUR"
-              locale="de-DE"
-              minFractionDigits={2}
+              changed={setCondoFee}
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               &nbsp;
@@ -329,43 +157,16 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="frentIndex">Mietspiegel €/m²</label>
-            <InputNumber
+            <CurrencyInput
               id="frentIndex"
+              name="frentIndex"
               value={rentIndex}
-              onValueChange={e => {
-                setRentIndex(parseFloat(e.value));
-                if (livingSpace) {
-                  const newRent = Math.round(parseFloat(e.value) * livingSpace);
-                  setRent(newRent.toString());
-                  recalculate(
-                    parseFloat(price),
-                    provision,
-                    buyingcosts,
-                    livingSpace,
-                    interest,
-                    repayment,
-                    parseFloat(condoFee),
-                    newRent,
-                    parseFloat(e.value)
-                  );
-                } else {
-                  recalculate(
-                    parseFloat(price),
-                    provision,
-                    buyingcosts,
-                    livingSpace,
-                    interest,
-                    repayment,
-                    parseFloat(condoFee),
-                    parseFloat(rent),
-                    parseFloat(e.value)
-                  );
+              changed={e => {
+                setRentIndex(e);
+                if (livingSpace > 0) {
+                  setRent(livingSpace * e);
                 }
               }}
-              mode="currency"
-              currency="EUR"
-              locale="de-DE"
-              minFractionDigits={2}
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               &nbsp;
@@ -373,32 +174,16 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="frent">Mieteinnahmen / Monat</label>
-            <InputNumber
+            <CurrencyInput
               id="frent"
+              name="frent"
               value={rent}
-              onValueChange={e => {
-                setRent(e.value);
-                if (livingSpace) {
-                  setRentIndex(
-                    Math.round(parseFloat(e.value) / livingSpace).toString()
-                  );
+              changed={e => {
+                setRent(e);
+                if (livingSpace > 0) {
+                  setRentIndex(e / livingSpace);
                 }
-                recalculate(
-                  parseFloat(price),
-                  provision,
-                  buyingcosts,
-                  livingSpace,
-                  interest,
-                  repayment,
-                  parseFloat(condoFee),
-                  parseFloat(e.value),
-                  parseFloat(rentIndex)
-                );
               }}
-              mode="currency"
-              currency="EUR"
-              locale="de-DE"
-              minFractionDigits={2}
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               &nbsp;
@@ -406,24 +191,19 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="flivingSpace">Wohnfläche</label>
-            <InputNumber
+            <CurrencyInput
               id="flivingSpace"
+              name="flivingSpace"
               value={livingSpace}
-              onValueChange={e => {
-                setLivingSpace(parseFloat(e.value));
-                recalculate(
-                  parseFloat(price),
-                  provision,
-                  buyingcosts,
-                  parseFloat(e.value),
-                  interest,
-                  repayment,
-                  parseFloat(condoFee),
-                  parseFloat(rent),
-                  parseFloat(rentIndex)
-                );
+              changed={e => {
+                setLivingSpace(e);
+                if (rent > 0) {
+                  setRentIndex(rent / e);
+                } else if (rentIndex > 0) {
+                  setRent(e * rentIndex);
+                }
               }}
-              suffix=" m²"
+              suffix="m²"
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               &nbsp;
@@ -431,14 +211,11 @@ const App = props => {
           </div>
           <div className="p-field p-col-12 p-md-3 p-grid">
             <label htmlFor="ftotalamount">Gesamtsumme</label>
-            <InputNumber
+            <CurrencyInput
               id="ftotalamount"
-              value={totalAmount}
-              disabled
-              mode="currency"
-              currency="EUR"
-              locale="de-DE"
-              minFractionDigits={2}
+              name="ftotalamount"
+              value={calcGrandTotalBuying(price, provision, buyingcosts)}
+              changed={null}
             />
             <small id="fbuyingcosts-help" className="p-d-block">
               &nbsp;
@@ -449,14 +226,11 @@ const App = props => {
           <div className="p-fluid p-formgrid p-grid">
             <div className="p-field p-col-12 p-md-3 p-grid">
               <label htmlFor="fpriceperspace">€ / m²</label>
-              <InputNumber
+              <CurrencyInput
                 id="fpriceperspace"
-                value={pricePerSpace}
-                disabled
-                mode="currency"
-                currency="EUR"
-                locale="de-DE"
-                minFractionDigits={2}
+                name="fpriceperspace"
+                value={calcPricePerSQM(price, livingSpace)}
+                changed={null}
               />
               <small id="fbuyingcosts-help" className="p-d-block">
                 &nbsp;
@@ -464,14 +238,14 @@ const App = props => {
             </div>
             <div className="p-field p-col-12 p-md-3 p-grid">
               <label htmlFor="finterestPerMonth">Zinsen / Monat</label>
-              <InputNumber
+              <CurrencyInput
                 id="finterestPerMonth"
-                value={interestPerMonth}
-                disabled
-                mode="currency"
-                currency="EUR"
-                locale="de-DE"
-                minFractionDigits={2}
+                name="finterestPerMonth"
+                value={calcInterestPerMonthAmt(
+                  calcGrandTotalBuying(price, provision, buyingcosts),
+                  interest
+                )}
+                changed={null}
               />
               <small id="fbuyingcosts-help" className="p-d-block">
                 &nbsp;
@@ -479,14 +253,14 @@ const App = props => {
             </div>
             <div className="p-field p-col-12 p-md-3 p-grid">
               <label htmlFor="frepaymentPerMonth">Tilgung / Monat</label>
-              <InputNumber
+              <CurrencyInput
                 id="frepaymentPerMonth"
-                value={repaymentPerMonth}
-                disabled
-                mode="currency"
-                currency="EUR"
-                locale="de-DE"
-                minFractionDigits={2}
+                name="frepaymentPerMonth"
+                value={calcRepaymentPerMonthAmt(
+                  calcGrandTotalBuying(price, provision, buyingcosts),
+                  repayment
+                )}
+                changed={null}
               />
               <small id="fbuyingcosts-help" className="p-d-block">
                 &nbsp;
@@ -494,38 +268,128 @@ const App = props => {
             </div>
             <div className="p-field p-col-12 p-md-3 p-grid">
               <label htmlFor="fmonthlyCosts">Kosten / Monat</label>
-              <InputNumber
+              <CurrencyInput
                 id="fmonthlyCosts"
-                value={monthlyCosts}
-                disabled
-                mode="currency"
-                currency="EUR"
-                locale="de-DE"
-                minFractionDigits={2}
+                name="fmonthlyCosts"
+                value={
+                  calcRepaymentPerMonthAmt(
+                    calcGrandTotalBuying(price, provision, buyingcosts),
+                    repayment
+                  ) +
+                  calcInterestPerMonthAmt(
+                    calcGrandTotalBuying(price, provision, buyingcosts),
+                    interest
+                  ) +
+                  condoFee
+                }
+                changed={null}
               />
-              <small
-                id="fmonthlyCosts-help"
-                className="p-d-block"
-              >{`Ohne NK: ${formatCurrency(monthlyCostsNoBuyingCosts)}`}</small>
+              <small id="fmonthlyCosts-help" className="p-d-block">
+                {`Ohne NK: ${formatCurrency(
+                  calcInterestPerMonthAmt(
+                    calcGrandTotalBuying(price, provision, 0),
+                    interest
+                  ) +
+                    calcRepaymentPerMonthAmt(
+                      calcGrandTotalBuying(price, provision, 0),
+                      repayment
+                    ) +
+                    condoFee
+                )}`}
+                <br />
+                {`Ohne Hausgeld: ${formatCurrency(
+                  calcInterestPerMonthAmt(
+                    calcGrandTotalBuying(price, provision, 0),
+                    interest
+                  ) +
+                    calcRepaymentPerMonthAmt(
+                      calcGrandTotalBuying(price, provision, 0),
+                      repayment
+                    )
+                )}`}
+              </small>
             </div>
             <div className="p-field p-col-12 p-md-3 p-grid">
               <label htmlFor="fmonthlyCostsInvest">
                 Kosten / Monat (Anlage)
               </label>
-              <InputNumber
+              <CurrencyInput
                 id="fmonthlyCostsInvest"
-                value={monthlyCostsInvest}
-                disabled
-                mode="currency"
-                currency="EUR"
-                locale="de-DE"
-                minFractionDigits={2}
+                name="fmonthlyCostsInvest"
+                value={
+                  rentIndex && rentIndex > 0
+                    ? calcRepaymentPerMonthAmt(
+                        calcGrandTotalBuying(price, provision, buyingcosts),
+                        repayment
+                      ) +
+                      calcInterestPerMonthAmt(
+                        calcGrandTotalBuying(price, provision, buyingcosts),
+                        interest
+                      ) +
+                      condoFee -
+                      rentIndex * livingSpace
+                    : calcRepaymentPerMonthAmt(
+                        calcGrandTotalBuying(price, provision, buyingcosts),
+                        repayment
+                      ) +
+                      calcInterestPerMonthAmt(
+                        calcGrandTotalBuying(price, provision, buyingcosts),
+                        interest
+                      ) +
+                      condoFee -
+                      rent
+                }
+                changed={null}
               />
               <small id="fmonthlyCostsInvest-help" className="p-d-block">
                 {`${calcRendite()} % - `}
-                {parseFloat(monthlyCostsInvest) > 0 ? (
+                {parseFloat(
+                  rentIndex && rentIndex > 0
+                    ? calcRepaymentPerMonthAmt(
+                        calcGrandTotalBuying(price, provision, buyingcosts),
+                        repayment
+                      ) +
+                        calcInterestPerMonthAmt(
+                          calcGrandTotalBuying(price, provision, buyingcosts),
+                          interest
+                        ) +
+                        condoFee -
+                        rentIndex * livingSpace
+                    : calcRepaymentPerMonthAmt(
+                        calcGrandTotalBuying(price, provision, buyingcosts),
+                        repayment
+                      ) +
+                        calcInterestPerMonthAmt(
+                          calcGrandTotalBuying(price, provision, buyingcosts),
+                          interest
+                        ) +
+                        condoFee -
+                        rent
+                ) > 0 ? (
                   <span className="text-red">Verlust</span>
-                ) : parseFloat(monthlyCostsInvest) < 0 ? (
+                ) : parseFloat(
+                    rentIndex && rentIndex > 0
+                      ? calcRepaymentPerMonthAmt(
+                          calcGrandTotalBuying(price, provision, buyingcosts),
+                          repayment
+                        ) +
+                          calcInterestPerMonthAmt(
+                            calcGrandTotalBuying(price, provision, buyingcosts),
+                            interest
+                          ) +
+                          condoFee -
+                          rentIndex * livingSpace
+                      : calcRepaymentPerMonthAmt(
+                          calcGrandTotalBuying(price, provision, buyingcosts),
+                          repayment
+                        ) +
+                          calcInterestPerMonthAmt(
+                            calcGrandTotalBuying(price, provision, buyingcosts),
+                            interest
+                          ) +
+                          condoFee -
+                          rent
+                  ) < 0 ? (
                   <span className="text-green">Gewinn</span>
                 ) : (
                   <span />
